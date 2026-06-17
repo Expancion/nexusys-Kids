@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ 'Upravit' if cat else 'Nová' }} kategorie videí</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; }
+    .swatch { width:36px;height:36px;border-radius:10px;cursor:pointer;
+              transition:transform .15s,box-shadow .15s;flex-shrink:0; }
+    .swatch:hover { transform:scale(1.15); }
+    .swatch.selected { box-shadow:0 0 0 3px white;transform:scale(1.15); }
+    #cat-preview {
+      width:80px;height:80px;border-radius:20px;
+      display:flex;flex-direction:column;align-items:center;
+      justify-content:center;gap:4px;transition:background .2s;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
+              bg-slate-950/90 backdrop-blur px-6 py-3">
+    <a href="/admin/videos" class="text-slate-400 hover:text-white transition">←</a>
+    <span class="font-black text-white">{{ 'Upravit kategorii' if cat else 'Nová kategorie' }}</span>
+  </nav>
+
+  <main class="max-w-lg mx-auto px-6 py-8">
+    <form method="post" class="space-y-6">
+
+      <!-- Preview -->
+      <div class="flex items-center gap-5 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <div id="cat-preview" style="background: {{ cat.color if cat else gradients[0][1] }};">
+          <span id="preview-icon" class="text-3xl leading-none">{{ cat.icon if cat else '🎬' }}</span>
+          <span id="preview-name" class="text-white font-black text-xs text-center px-1 truncate max-w-full">
+            {{ cat.name if cat else 'Název' }}
+          </span>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Náhled kategorie</p>
+        </div>
+      </div>
+
+      <!-- Name + Icon row -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Název</label>
+          <input type="text" name="name" required maxlength="80"
+                 value="{{ cat.name if cat else '' }}"
+                 placeholder="Pohádky"
+                 oninput="document.getElementById('preview-name').textContent=this.value||'Název'"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                        focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona</label>
+          <input type="text" name="icon" maxlength="4"
+                 value="{{ cat.icon if cat else '🎬' }}"
+                 oninput="document.getElementById('preview-icon').textContent=this.value||'🎬'"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        text-2xl focus:outline-none focus:border-indigo-500
+                        focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
+      </div>
+
+      <!-- Color -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-2">Barva</label>
+        <input type="hidden" name="color" id="color-input"
+               value="{{ cat.color if cat else gradients[0][1] }}" />
+        <div class="flex flex-wrap gap-2">
+          {% for name, grad in gradients %}
+          <div class="swatch {{ 'selected' if cat and cat.color == grad or (not cat and loop.first) }}"
+               style="background:{{ grad }};" title="{{ name }}"
+               onclick="selectColor(this,'{{ grad }}')"></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Sort order -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Pořadí</label>
+        <input type="number" name="sort_order" min="0" max="999"
+               value="{{ cat.sort_order if cat else 0 }}"
+               class="w-28 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      {% if error %}<p class="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-2.5 text-sm text-red-400">{{ error }}</p>{% endif %}
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
+                       text-white transition active:scale-95">
+          {{ 'Uložit' if cat else 'Vytvořit kategorii' }}
+        </button>
+        <a href="/admin/videos"
+           class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
+                  hover:border-slate-500 hover:text-white transition">Zrušit</a>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    function selectColor(el, grad) {
+      document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('color-input').value = grad;
+      document.getElementById('cat-preview').style.background = grad;
+    }
+  </script>
+</body>
+</html>

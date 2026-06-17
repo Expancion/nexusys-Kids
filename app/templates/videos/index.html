@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  {% include '_kiosk_head.html' %}
+  <title>Videa</title>
+  <style>
+    .cat-tile {
+      transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+      cursor: pointer;
+    }
+    .cat-tile:hover { transform: scale(1.08) translateY(-4px); }
+    .cat-tile:active { transform: scale(.97); }
+  </style>
+</head>
+<body class="min-h-screen text-white overflow-x-hidden">
+
+  <div class="stars" id="stars"></div>
+  {% include '_iframe_overlay.html' %}
+
+  <div class="relative z-10 flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-8 pt-7 pb-2 shrink-0">
+      <a href="/"
+         class="flex items-center gap-2 rounded-2xl bg-white/10 hover:bg-white/20
+                px-5 py-2.5 font-black text-white transition text-sm">
+        ← Kiosek
+      </a>
+      <div class="text-center select-none">
+        <div class="text-3xl font-black text-white drop-shadow-lg">📺 Videa</div>
+        <div class="text-sm text-white/50 font-bold mt-0.5">Vyber kategorii</div>
+      </div>
+      <div id="clock" class="text-right font-black text-white text-2xl tabular-nums drop-shadow-lg"></div>
+    </header>
+
+    <!-- Categories grid -->
+    <main class="flex-1 grid gap-5 px-8 py-8 content-start
+                 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+
+      {% for cat in categories %}
+      <a href="/videos/{{ cat.id }}"
+         class="cat-tile flex flex-col items-center justify-center gap-3 rounded-3xl p-8 shadow-2xl"
+         style="background: {{ cat.color }}; box-shadow: 0 8px 32px -4px rgba(0,0,0,.5); aspect-ratio: 1;">
+        <span class="text-6xl leading-none drop-shadow-lg select-none">{{ cat.icon }}</span>
+        <span class="text-white font-black text-center text-base leading-tight drop-shadow">{{ cat.name }}</span>
+      </a>
+      {% endfor %}
+
+      {% if categories|length == 0 %}
+      <div class="col-span-full flex flex-col items-center gap-4 py-20 text-white/30">
+        <span class="text-6xl">🎬</span>
+        <p class="text-lg font-bold">Zatím žádné kategorie — přidej je v Rodičovském panelu</p>
+      </div>
+      {% endif %}
+
+    </main>
+  </div>
+
+  <script>
+    const clk = document.getElementById('clock');
+    function tick() {
+      clk.textContent = new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+    }
+    tick(); setInterval(tick,1000);
+
+    const se = document.getElementById('stars');
+    for(let i=0;i<70;i++){
+      const s=document.createElement('div'); const z=Math.random()*2.5+.5;
+      s.className='star';
+      s.style.cssText=`width:${z}px;height:${z}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--delay:-${(Math.random()*5).toFixed(1)}s;`;
+      se.appendChild(s);
+    }
+  </script>
+</body>
+</html>

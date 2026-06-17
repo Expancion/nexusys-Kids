@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Správa videí — Rodičovský panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  {% include 'admin/_admin_nav.html' %}
+
+  <main class="max-w-5xl mx-auto px-6 py-8 space-y-10">
+
+    <!-- Top actions -->
+    <div class="flex flex-wrap gap-3">
+      <a href="/admin/videos/new"
+         class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-sm font-bold
+                text-white transition active:scale-95">
+        + Přidat video
+      </a>
+      <a href="/admin/videos/cats/new"
+         class="rounded-xl border border-slate-700 hover:border-slate-500 px-5 py-2.5
+                text-sm font-bold text-slate-300 hover:text-white transition">
+        + Nová kategorie
+      </a>
+    </div>
+
+    <!-- Per-category sections -->
+    {% for cat in cats %}
+    <section class="space-y-3">
+
+      <!-- Category header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0"
+               style="background: {{ cat.color }};">
+            {{ cat.icon }}
+          </div>
+          <div>
+            <h2 class="font-black text-white text-lg leading-none">{{ cat.name }}</h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              {{ cat.videos.filter_by(enabled=True).count() }} aktivních ·
+              {{ cat.videos.count() }} celkem
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="/admin/videos/new?cat={{ cat.id }}"
+             class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
+                    font-bold text-slate-300 transition">
+            + Video
+          </a>
+          <a href="/admin/videos/cats/{{ cat.id }}/edit"
+             class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
+                    font-bold text-slate-300 transition">
+            Upravit
+          </a>
+          <form method="post" action="/admin/videos/cats/{{ cat.id }}/delete"
+                onsubmit="return confirm('Smazat kategorii „{{ cat.name }}" i s videi?')">
+            <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
+                           font-bold text-red-400 transition">
+              Smazat
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Videos in this category -->
+      {% set vids = cat.videos.order_by('sort_order','id').all() %}
+      {% if vids %}
+      <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
+        {% for v in vids %}
+        <div class="flex items-center gap-4 px-5 py-3 {% if not v.enabled %}opacity-40{% endif %}
+                    hover:bg-slate-900/50 transition">
+          <!-- Thumbnail -->
+          <img src="{{ v.thumb_url }}" alt=""
+               class="w-20 rounded-xl object-cover shrink-0" style="aspect-ratio:16/9">
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-white truncate">{{ v.title }}</p>
+            <p class="text-xs text-slate-500 font-mono mt-0.5">{{ v.youtube_id }}</p>
+          </div>
+          <!-- Sort order -->
+          <span class="text-xs text-slate-600 shrink-0 tabular-nums">#{{ v.sort_order }}</span>
+          <!-- Actions -->
+          <div class="flex items-center gap-2 shrink-0">
+            <form method="post" action="/admin/videos/{{ v.id }}/toggle">
+              <button class="rounded-lg px-3 py-1.5 text-xs font-bold transition
+                             {% if v.enabled %}bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
+                             {% else %}bg-slate-700 text-slate-400 hover:bg-slate-600{% endif %}">
+                {{ '✓ Aktivní' if v.enabled else '✗ Skryté' }}
+              </button>
+            </form>
+            <a href="/admin/videos/{{ v.id }}/edit"
+               class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
+                      font-bold text-slate-300 transition">
+              Upravit
+            </a>
+            <form method="post" action="/admin/videos/{{ v.id }}/delete"
+                  onsubmit="return confirm('Smazat „{{ v.title }}"?')">
+              <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
+                             font-bold text-red-400 transition">
+                Smazat
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-2xl border border-dashed border-slate-800 py-6 text-center
+                  text-slate-600 text-sm">
+        Žádná videa — <a href="/admin/videos/new?cat={{ cat.id }}"
+                          class="text-indigo-400 hover:text-indigo-300">přidej první</a>
+      </div>
+      {% endif %}
+
+    </section>
+    {% endfor %}
+
+    {% if cats|length == 0 %}
+    <div class="flex flex-col items-center gap-4 py-20 text-slate-500">
+      <span class="text-5xl">🎬</span>
+      <p class="text-lg font-bold">Nejdřív vytvoř kategorii</p>
+      <a href="/admin/videos/cats/new"
+         class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-sm font-bold
+                text-white transition">
+        + Nová kategorie
+      </a>
+    </div>
+    {% endif %}
+
+  </main>
+</body>
+</html>

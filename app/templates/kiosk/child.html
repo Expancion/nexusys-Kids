@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  {% include '_kiosk_head.html' %}
+  <title>{{ child.name }} — kiosek</title>
+  <style>
+    .video-card { transition: transform .18s cubic-bezier(.34,1.56,.64,1); cursor: pointer; }
+    .video-card:hover { transform: scale(1.05) translateY(-3px); }
+    .video-card:active { transform: scale(.97); }
+    .play-overlay { opacity: 0; transition: opacity .15s; }
+    .video-card:hover .play-overlay { opacity: 1; }
+    .cat-btn { transition: all .2s ease; border: 2px solid transparent; }
+    .cat-btn.active { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.35); }
+    .cat-btn:not(.active):hover { background: rgba(255,255,255,.08); }
+  </style>
+</head>
+<body class="min-h-screen text-white overflow-x-hidden">
+
+  <div class="stars" id="stars"></div>
+  {% include '_iframe_overlay.html' %}
+
+  <!-- No-points overlay -->
+  <div id="no-points-overlay"
+       class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center
+              bg-slate-950/95 backdrop-blur-sm px-8">
+    <div class="text-8xl mb-6 select-none">🔒</div>
+    <h2 class="text-3xl font-black text-white mb-3 text-center">Nemáš dost bodů!</h2>
+    <p id="no-points-msg" class="text-white/60 text-center max-w-sm mb-8 text-lg">
+      Vydělej si body splněním úkolů od rodiče.
+    </p>
+    <button onclick="document.getElementById('no-points-overlay').classList.add('hidden')"
+            class="rounded-2xl bg-slate-800 hover:bg-slate-700 px-10 py-4 text-xl
+                   font-black text-white transition active:scale-95">
+      OK
+    </button>
+  </div>
+
+  <div class="relative z-10 flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-8 pt-7 pb-2 shrink-0 gap-4">
+
+      <!-- Child identity -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
+             style="background: {{ child.avatar_color }};">
+          {{ child.avatar_icon }}
+        </div>
+        <div class="min-w-0">
+          <div class="text-xl font-black text-white leading-none truncate">{{ child.name }}</div>
+          <div class="text-xs text-white/40 font-bold mt-0.5">Co si dneska pustíš?</div>
+        </div>
+      </div>
+
+      <!-- Points balance -->
+      <div class="flex flex-col items-center shrink-0">
+        <div class="flex items-baseline gap-1">
+          <span class="text-4xl font-black text-yellow-400 leading-none tabular-nums"
+                id="points-display">{{ child.points }}</span>
+          <span class="text-yellow-500/70 font-bold text-sm">⭐</span>
+        </div>
+        <div class="text-xs text-white/40 font-bold mt-0.5">
+          {{ child.video_cost }} ⭐ / video
+        </div>
+      </div>
+
+      <!-- Clock -->
+      <div class="text-right min-w-[8rem] shrink-0">
+        <div id="clock" class="text-2xl font-black text-white tabular-nums"></div>
+        <div id="date" class="text-xs text-white/40 font-bold mt-0.5 capitalize"></div>
+      </div>
+    </header>
+
+    <!-- Category tabs -->
+    <nav class="flex gap-2 px-8 pt-4 pb-1 shrink-0 flex-wrap items-center">
+      <button onclick="filterCat('all', this)"
+              class="cat-btn active rounded-2xl px-5 py-2 text-sm font-black text-white bg-white/10">
+        ✨ Vše
+      </button>
+      {% for cat in cats %}
+      <button onclick="filterCat('{{ cat.id }}', this)"
+              class="cat-btn rounded-2xl px-5 py-2 text-sm font-black text-white/80">
+        {{ cat.icon }} {{ cat.name }}
+      </button>
+      {% endfor %}
+    </nav>
+
+    <!-- Video grid -->
+    <main id="grid"
+          class="flex-1 grid gap-4 px-8 py-5 content-start
+                 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+
+      {% for video in videos %}
+      <button class="video-card group text-left"
+              data-cat-id="{{ video.category_id }}"
+              onclick="watchVideo({{ child.id }}, {{ video.id }},
+                       '{{ video.embed_url }}', '{{ video.title | e }}')">
+        <div class="relative rounded-2xl overflow-hidden">
+          <img src="{{ video.thumb_url }}" alt="{{ video.title | e }}"
+               class="w-full object-cover" style="aspect-ratio:16/9;" loading="lazy" />
+          <div class="play-overlay absolute inset-0 flex items-center justify-center
+                      bg-black/35 rounded-2xl">
+            <span class="text-5xl drop-shadow-2xl select-none">▶️</span>
+          </div>
+          <div class="absolute top-2 right-2 bg-black/70 backdrop-blur rounded-full
+                      px-2.5 py-0.5 text-xs font-black text-yellow-400">
+            ⭐ {{ child.video_cost }}
+          </div>
+        </div>
+        <p class="mt-1.5 text-xs font-bold text-white/80 leading-tight px-0.5 line-clamp-2">
+          {{ video.title }}
+        </p>
+      </button>
+      {% endfor %}
+
+      {% if videos | length == 0 %}
+      <div class="col-span-full flex flex-col items-center justify-center gap-4 py-20 text-white/30">
+        <span class="text-6xl">📺</span>
+        <p class="text-lg font-bold">Zatím žádná videa — rodič je přidá v panelu</p>
+      </div>
+      {% endif %}
+
+    </main>
+  </div>
+
+  <script>
+    // ── Clock ──────────────────────────────────────────
+    const clockEl = document.getElementById('clock');
+    const dateEl  = document.getElementById('date');
+    function tick() {
+      const now = new Date();
+      clockEl.textContent = now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
+      dateEl.textContent  = now.toLocaleDateString('cs-CZ', {weekday:'long', day:'numeric', month:'long'});
+    }
+    tick(); setInterval(tick, 1000);
+
+    // ── Stars ──────────────────────────────────────────
+    const se = document.getElementById('stars');
+    for (let i = 0; i < 90; i++) {
+      const s = document.createElement('div');
+      const z = Math.random() * 2.5 + .5;
+      s.className = 'star';
+      s.style.cssText = `width:${z}px;height:${z}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--delay:-${(Math.random()*5).toFixed(1)}s;`;
+      se.appendChild(s);
+    }
+
+    // ── Category filter ────────────────────────────────
+    function filterCat(catId, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.video-card').forEach(el => {
+        el.style.display = (catId === 'all' || el.dataset.catId == catId) ? '' : 'none';
+      });
+    }
+
+    // ── Watch video (deduct points) ────────────────────
+    async function watchVideo(childId, videoId, embedUrl, title) {
+      try {
+        const resp = await fetch('/api/kiosk/watch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({child_id: childId, video_id: videoId}),
+        });
+        const data = await resp.json();
+        if (data.ok) {
+          document.getElementById('points-display').textContent = data.new_balance;
+          openTile(embedUrl, title);
+        } else {
+          document.getElementById('no-points-msg').textContent =
+            data.message || 'Nemáš dost bodů!';
+          document.getElementById('no-points-overlay').classList.remove('hidden');
+        }
+      } catch (err) {
+        // Network error — let video play without deducting (offline fallback)
+        openTile(embedUrl, title);
+      }
+    }
+  </script>
+</body>
+</html>

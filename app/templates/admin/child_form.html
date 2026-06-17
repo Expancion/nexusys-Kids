@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ 'Upravit' if child else 'Nové' }} dítě — Rodičovský panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; }
+    .swatch { width:36px;height:36px;border-radius:10px;cursor:pointer;
+              transition:transform .15s,box-shadow .15s;flex-shrink:0; }
+    .swatch:hover { transform:scale(1.15); }
+    .swatch.selected { box-shadow:0 0 0 3px white;transform:scale(1.15); }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  {% include 'admin/_admin_nav.html' %}
+
+  <main class="max-w-lg mx-auto px-6 py-8">
+    <div class="mb-6">
+      <a href="{{ '/admin/children/' + child.id|string if child else '/admin/children' }}"
+         class="text-slate-400 hover:text-white transition text-sm">← Zpět</a>
+      <h1 class="text-xl font-black text-white mt-2">
+        {{ 'Upravit dítě' if child else 'Nové dítě' }}
+      </h1>
+    </div>
+
+    <form method="post" class="space-y-6">
+
+      <!-- Preview -->
+      <div class="flex items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <div id="avatar-preview"
+             class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0"
+             style="background: {{ child.avatar_color if child else gradients[0][1] }};">
+          <span id="preview-icon">{{ child.avatar_icon if child else '🧒' }}</span>
+        </div>
+        <div>
+          <p class="font-black text-white text-lg" id="preview-name">
+            {{ child.name if child else 'Jméno dítěte' }}
+          </p>
+          <p class="text-xs text-slate-500">Náhled avataru</p>
+        </div>
+      </div>
+
+      <!-- Name + icon -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Jméno</label>
+          <input type="text" name="name" required maxlength="80"
+                 value="{{ child.name if child else '' }}"
+                 placeholder="Kuba"
+                 oninput="document.getElementById('preview-name').textContent=this.value||'Jméno dítěte'"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                        focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona avataru</label>
+          <input type="text" name="avatar_icon" maxlength="4"
+                 value="{{ child.avatar_icon if child else '🧒' }}"
+                 oninput="document.getElementById('preview-icon').textContent=this.value||'🧒'"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        text-2xl focus:outline-none focus:border-indigo-500
+                        focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
+      </div>
+
+      <!-- Color -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-2">Barva avataru</label>
+        <input type="hidden" name="avatar_color" id="color-input"
+               value="{{ child.avatar_color if child else gradients[0][1] }}" />
+        <div class="flex flex-wrap gap-2">
+          {% for name, grad in gradients %}
+          <div class="swatch {{ 'selected' if child and child.avatar_color == grad or (not child and loop.first) }}"
+               style="background:{{ grad }};" title="{{ name }}"
+               onclick="selectColor(this,'{{ grad }}')"></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Points (new only) -->
+      {% if not child %}
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Počáteční body</label>
+        <input type="number" name="points" min="0" max="99999" value="0"
+               class="w-32 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+      {% endif %}
+
+      <!-- video_cost + daily_limit -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Cena 1 videa (body)</label>
+          <input type="number" name="video_cost" min="0" max="9999"
+                 value="{{ child.video_cost if child else 10 }}"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">
+            Denní limit videí <span class="text-slate-600">(0 = bez limitu)</span>
+          </label>
+          <input type="number" name="daily_video_limit" min="0" max="999"
+                 value="{{ child.daily_video_limit if child else 0 }}"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
+      </div>
+
+      {% if error %}
+      <p class="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-2.5 text-sm text-red-400">
+        {{ error }}
+      </p>
+      {% endif %}
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
+                       text-white transition active:scale-95">
+          {{ 'Uložit' if child else 'Vytvořit' }}
+        </button>
+        <a href="{{ '/admin/children/' + child.id|string if child else '/admin/children' }}"
+           class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
+                  hover:border-slate-500 hover:text-white transition">
+          Zrušit
+        </a>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    function selectColor(el, grad) {
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('color-input').value = grad;
+      document.getElementById('avatar-preview').style.background = grad;
+    }
+  </script>
+</body>
+</html>

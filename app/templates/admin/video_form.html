@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ 'Upravit video' if video else 'Přidat video' }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
+              bg-slate-950/90 backdrop-blur px-6 py-3">
+    <a href="/admin/videos" class="text-slate-400 hover:text-white transition">←</a>
+    <span class="font-black text-white">{{ 'Upravit video' if video else 'Přidat video' }}</span>
+  </nav>
+
+  <main class="max-w-lg mx-auto px-6 py-8">
+    <form method="post" class="space-y-6">
+
+      <!-- Thumbnail preview -->
+      <div id="preview-wrap" class="{{ '' if video else 'hidden' }}
+           rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden">
+        <img id="thumb-preview"
+             src="{{ video.thumb_url if video else '' }}"
+             alt="" class="w-full" style="aspect-ratio:16/9;object-fit:cover;" />
+        <div class="px-4 py-3">
+          <p class="text-xs text-slate-500 uppercase tracking-widest font-bold mb-1">Náhled</p>
+          <p id="preview-title" class="font-bold text-white text-sm">
+            {{ video.title if video else '' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- YouTube URL -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">YouTube URL nebo ID</label>
+        <input type="text" name="url" required
+               value="{{ video.youtube_id if video else '' }}"
+               placeholder="https://www.youtube.com/watch?v=..."
+               oninput="updatePreview(this.value)"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition font-mono text-sm" />
+        <p class="mt-1.5 text-xs text-slate-500">
+          Funguje: youtube.com/watch?v=… · youtu.be/… · přímo ID (11 znaků)
+        </p>
+      </div>
+
+      <!-- Title -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Název videa</label>
+        <input type="text" name="title" required maxlength="120"
+               value="{{ video.title if video else '' }}"
+               placeholder="Pohádka o Červené Karkulce"
+               oninput="document.getElementById('preview-title').textContent=this.value"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- Category -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Kategorie</label>
+        <select name="category_id"
+                class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                       focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+          {% for cat in cats %}
+          <option value="{{ cat.id }}"
+                  {{ 'selected' if (video and video.category_id == cat.id) or (preselect and preselect == cat.id) }}>
+            {{ cat.icon }} {{ cat.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Sort order -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Pořadí</label>
+        <input type="number" name="sort_order" min="0" max="999"
+               value="{{ video.sort_order if video else 0 }}"
+               class="w-28 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      {% if error %}
+      <p class="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-2.5 text-sm text-red-400">
+        {{ error }}
+      </p>
+      {% endif %}
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
+                       text-white transition active:scale-95">
+          {{ 'Uložit' if video else 'Přidat video' }}
+        </button>
+        <a href="/admin/videos"
+           class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
+                  hover:border-slate-500 hover:text-white transition">Zrušit</a>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // Extract YT ID client-side for live preview
+    function extractId(raw) {
+      raw = raw.trim();
+      let m = raw.match(/(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      m = raw.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      m = raw.match(/\/(?:embed|shorts)\/([a-zA-Z0-9_-]{11})/);
+      if (m) return m[1];
+      if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+      return null;
+    }
+
+    function updatePreview(raw) {
+      const id = extractId(raw);
+      const wrap = document.getElementById('preview-wrap');
+      const img  = document.getElementById('thumb-preview');
+      if (id) {
+        img.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+        wrap.classList.remove('hidden');
+      } else {
+        wrap.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

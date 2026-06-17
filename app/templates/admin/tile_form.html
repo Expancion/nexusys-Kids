@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ 'Upravit' if tile else 'Nová' }} dlaždice — Rodičovský panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; }
+    .swatch { width: 36px; height: 36px; border-radius: 10px; cursor: pointer;
+              transition: transform .15s, box-shadow .15s; flex-shrink: 0; }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.selected { box-shadow: 0 0 0 3px white; transform: scale(1.15); }
+    #tile-preview {
+      width: 100px; height: 100px; border-radius: 24px;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 6px; transition: background .2s;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  <!-- Nav -->
+  <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
+              bg-slate-950/90 backdrop-blur px-6 py-3">
+    <a href="/admin/tiles" class="text-slate-400 hover:text-white transition">←</a>
+    <span class="font-black text-white">
+      {{ 'Upravit dlaždici' if tile else 'Nová dlaždice' }}
+    </span>
+  </nav>
+
+  <main class="max-w-2xl mx-auto px-6 py-8">
+    <form method="post" class="space-y-6">
+
+      <!-- Preview + emoji row -->
+      <div class="flex items-center gap-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <div id="tile-preview" style="background: {{ tile.color if tile else gradients[6][1] }};">
+          <span id="preview-icon" class="text-4xl leading-none">{{ tile.icon if tile else '🌐' }}</span>
+          <span id="preview-name" class="text-white font-black text-xs text-center leading-tight px-2 truncate max-w-full">
+            {{ tile.name if tile else 'Název' }}
+          </span>
+        </div>
+        <div class="flex-1">
+          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-2">Náhled</p>
+          <p class="text-sm text-slate-400">Náhled se aktualizuje živě při editaci.</p>
+        </div>
+      </div>
+
+      <!-- Name -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Název</label>
+        <input type="text" name="name" required maxlength="80"
+               value="{{ tile.name if tile else '' }}"
+               placeholder="YouTube Kids"
+               oninput="document.getElementById('preview-name').textContent = this.value || 'Název'"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- URL -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">URL adresa</label>
+        <input type="url" name="url" required maxlength="255"
+               value="{{ tile.url if tile else '' }}"
+               placeholder="https://www.youtubekids.com"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition font-mono text-sm" />
+      </div>
+
+      <!-- Icon + Category row -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona (emoji)</label>
+          <input type="text" name="icon" maxlength="4"
+                 value="{{ tile.icon if tile else '🌐' }}"
+                 oninput="document.getElementById('preview-icon').textContent = this.value || '🌐'"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        text-2xl focus:outline-none focus:border-indigo-500
+                        focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Kategorie</label>
+          <select name="category"
+                  class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                         focus:outline-none focus:border-indigo-500 focus:ring-1
+                         focus:ring-indigo-500 transition">
+            {% for key, label in categories %}
+            <option value="{{ key }}" {{ 'selected' if tile and tile.category == key }}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <!-- Color picker -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-2">Barva dlaždice</label>
+        <input type="hidden" name="color" id="color-input"
+               value="{{ tile.color if tile else gradients[6][1] }}" />
+        <div class="flex flex-wrap gap-2">
+          {% for name, grad in gradients %}
+          <div class="swatch {{ 'selected' if tile and tile.color == grad or (not tile and loop.index0 == 6) }}"
+               style="background: {{ grad }};"
+               title="{{ name }}"
+               onclick="selectColor(this, '{{ grad }}')"></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Sort order -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">
+          Pořadí <span class="text-slate-500 font-normal">(nižší číslo = dříve)</span>
+        </label>
+        <input type="number" name="sort_order" min="0" max="999"
+               value="{{ tile.sort_order if tile else 0 }}"
+               class="w-32 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      focus:outline-none focus:border-indigo-500 focus:ring-1
+                      focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- Submit -->
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
+                       text-white transition active:scale-95">
+          {{ 'Uložit změny' if tile else 'Přidat dlaždici' }}
+        </button>
+        <a href="/admin/tiles"
+           class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
+                  hover:border-slate-500 hover:text-white transition">
+          Zrušit
+        </a>
+      </div>
+
+    </form>
+  </main>
+
+  <script>
+    function selectColor(el, grad) {
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('color-input').value = grad;
+      document.getElementById('tile-preview').style.background = grad;
+    }
+  </script>
+</body>
+</html>

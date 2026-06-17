@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ child.name }} — Rodičovský panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  {% include 'admin/_admin_nav.html' %}
+
+  <main class="max-w-4xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Child header -->
+    <div class="flex items-center gap-5">
+      <div class="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl shrink-0"
+           style="background: {{ child.avatar_color }};">
+        {{ child.avatar_icon }}
+      </div>
+      <div class="flex-1">
+        <h1 class="text-3xl font-black text-white">{{ child.name }}</h1>
+        <p class="text-slate-500 text-sm mt-1">
+          1 video = {{ child.video_cost }} bodů
+          {% if child.daily_video_limit > 0 %}
+            · limit {{ child.daily_video_limit }} videí/den
+          {% endif %}
+        </p>
+      </div>
+      <div class="flex gap-2 shrink-0 flex-wrap justify-end">
+        <a href="/kiosk/{{ child.id }}" target="_blank"
+           class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-bold
+                  text-white transition active:scale-95">
+          ▶ Kiosek
+        </a>
+        <a href="/admin/children/{{ child.id }}/edit"
+           class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
+                  text-slate-300 hover:text-white transition">
+          Upravit
+        </a>
+        <form method="post" action="/admin/children/{{ child.id }}/delete"
+              onsubmit="return confirm('Opravdu smazat {{ child.name }}? Tím smažeš i všechny body a historii.')">
+          <button class="rounded-xl bg-red-500/10 hover:bg-red-500/20 px-4 py-2 text-sm
+                         font-bold text-red-400 transition">
+            Smazat
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Points + manual award -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div class="rounded-3xl bg-gradient-to-br from-yellow-500/20 to-orange-500/10
+                  border border-yellow-500/20 p-6 flex items-center gap-5">
+        <span class="text-6xl select-none">⭐</span>
+        <div>
+          <div class="text-5xl font-black text-yellow-400 leading-none tabular-nums">
+            {{ child.points }}
+          </div>
+          <div class="text-slate-400 font-bold mt-1">bodů zbývá</div>
+          <div class="text-slate-600 text-xs mt-0.5">
+            ≈ {{ (child.points // child.video_cost) if child.video_cost > 0 else '∞' }} videí
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/50 p-6">
+        <h3 class="font-black text-white mb-4">Přidat body ručně</h3>
+        <form method="post" action="/admin/children/{{ child.id }}/award"
+              class="flex gap-2 flex-wrap">
+          <input type="number" name="points" min="1" max="9999" placeholder="Body" required
+                 class="w-24 rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-white
+                        text-sm focus:outline-none focus:border-indigo-500 transition" />
+          <input type="text" name="reason" placeholder="Důvod (nepovinné)"
+                 class="flex-1 min-w-[120px] rounded-xl bg-slate-800 border border-slate-700
+                        px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500 transition" />
+          <button type="submit"
+                  class="rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-sm
+                         font-bold text-white transition active:scale-95">
+            + Přidat
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Quick award from tasks -->
+    {% if tasks %}
+    <div>
+      <h3 class="font-black text-white mb-3">⚡ Rychlé odměny za úkoly</h3>
+      <div class="flex flex-wrap gap-3">
+        {% for task in tasks %}
+        <form method="post" action="/admin/children/{{ child.id }}/award">
+          <input type="hidden" name="task_id" value="{{ task.id }}" />
+          <button type="submit"
+                  class="rounded-2xl border border-slate-700 bg-slate-900 hover:bg-slate-800
+                         hover:border-slate-600 px-5 py-3 text-left transition active:scale-95">
+            <div class="text-2xl mb-1 select-none">{{ task.icon }}</div>
+            <div class="font-bold text-white text-sm leading-tight">{{ task.name }}</div>
+            <div class="text-yellow-400 text-xs font-black mt-1">+{{ task.points_value }} ⭐</div>
+          </button>
+        </form>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="rounded-2xl border border-dashed border-slate-800 py-5 px-6 text-sm text-slate-500">
+      Žádné úkoly —
+      <a href="/admin/tasks/new" class="text-indigo-400 hover:text-indigo-300">přidej úkoly</a>
+      pro rychlé odměňování.
+    </div>
+    {% endif %}
+
+    <!-- Devices -->
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-black text-white">Zařízení</h3>
+        <a href="/admin/children/{{ child.id }}/devices/new"
+           class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
+                  text-slate-300 hover:text-white transition">
+          + Přidat zařízení
+        </a>
+      </div>
+
+      {% if devices %}
+      <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
+        {% for dev in devices %}
+        <div class="flex items-center gap-4 px-5 py-3 hover:bg-slate-900/50 transition
+                    {% if not dev.allowed %}opacity-50{% endif %}">
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-white">{{ dev.name }}</div>
+            <div class="text-xs text-slate-500 font-mono mt-0.5">{{ dev.device_key }}</div>
+            {% if dev.locked_message %}
+            <div class="text-xs text-red-400 mt-0.5">🔒 {{ dev.locked_message }}</div>
+            {% endif %}
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <form method="post" action="/admin/devices/{{ dev.id }}/toggle">
+              <button class="rounded-lg px-3 py-1.5 text-xs font-bold transition
+                             {% if dev.allowed %}
+                               bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
+                             {% else %}
+                               bg-slate-700 text-slate-400 hover:bg-slate-600
+                             {% endif %}">
+                {{ '✓ Povoleno' if dev.allowed else '✗ Blokováno' }}
+              </button>
+            </form>
+            <a href="/admin/devices/{{ dev.id }}/edit"
+               class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
+                      font-bold text-slate-300 transition">
+              Upravit
+            </a>
+            <form method="post" action="/admin/devices/{{ dev.id }}/delete"
+                  onsubmit="return confirm('Smazat zařízení „{{ dev.name }}"?')">
+              <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
+                             font-bold text-red-400 transition">
+                Smazat
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-2xl border border-dashed border-slate-800 py-5 px-6
+                  text-sm text-slate-500 text-center">
+        Žádné zařízení —
+        <a href="/admin/children/{{ child.id }}/devices/new"
+           class="text-indigo-400 hover:text-indigo-300">přidej zařízení</a>
+        pro device policy API.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Transaction history -->
+    <div class="space-y-3">
+      <h3 class="font-black text-white">Historie bodů <span class="text-slate-600 font-normal text-sm">(posledních 20)</span></h3>
+      {% if txs %}
+      <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
+        {% for tx in txs %}
+        <div class="flex items-center gap-4 px-5 py-3">
+          <span class="text-base font-black tabular-nums shrink-0 w-14 text-right
+                       {{ 'text-emerald-400' if tx.delta > 0 else 'text-red-400' }}">
+            {{ '+' if tx.delta > 0 else '' }}{{ tx.delta }}
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-white truncate">{{ tx.reason }}</p>
+            <p class="text-xs text-slate-600">{{ tx.actor }}</p>
+          </div>
+          <span class="text-xs text-slate-600 shrink-0 tabular-nums">
+            {{ tx.created_at.strftime('%d.%m. %H:%M') }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-2xl border border-dashed border-slate-800 py-5 text-center
+                  text-slate-500 text-sm">
+        Žádné transakce
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</body>
+</html>

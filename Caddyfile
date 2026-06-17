@@ -1,0 +1,15 @@
+# Nexus Junior — Caddy reverse proxy
+#
+# Lokální síť bez domény → HTTP na portu 80
+# Pro HTTPS s lokálním certifikátem zakomentuj blok níže a odkomentuj „tls internal"
+
+:80 {
+    reverse_proxy web:8080
+}
+
+# Pokud máš lokální hostname (např. nexus.home) nebo doménu:
+#
+# nexus.home {
+#     tls internal
+#     reverse_proxy web:8080
+# }

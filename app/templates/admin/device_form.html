@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ 'Upravit' if device else 'Nové' }} zařízení — Rodičovský panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  {% include 'admin/_admin_nav.html' %}
+
+  <main class="max-w-lg mx-auto px-6 py-8">
+    <div class="mb-6">
+      <a href="/admin/children/{{ child.id }}"
+         class="text-slate-400 hover:text-white transition text-sm">← Zpět na {{ child.name }}</a>
+      <h1 class="text-xl font-black text-white mt-2">
+        {{ 'Upravit zařízení' if device else 'Nové zařízení' }}
+      </h1>
+    </div>
+
+    <form method="post" class="space-y-6">
+
+      <!-- Device name -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Název zařízení</label>
+        <input type="text" name="name" required maxlength="120"
+               value="{{ device.name if device else '' }}"
+               placeholder="Kubův laptop"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- Device key -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Device klíč</label>
+        <input type="text" name="device_key" required maxlength="80"
+               value="{{ device.device_key if device else '' }}"
+               placeholder="kuba-laptop"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      font-mono placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+        <p class="mt-1.5 text-xs text-slate-500">
+          Tento klíč zadáš v zařízení do parametru <code>deviceId</code> pro device policy API.
+        </p>
+      </div>
+
+      <!-- Allowed -->
+      <div class="flex items-center gap-3">
+        <input type="checkbox" name="allowed" id="allowed-check"
+               {{ 'checked' if (device and device.allowed) or not device }}
+               class="w-5 h-5 rounded accent-indigo-500" />
+        <label for="allowed-check" class="text-sm font-bold text-slate-300">
+          Zařízení povoleno (může spustit kiosek)
+        </label>
+      </div>
+
+      <!-- Locked message -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">
+          Zpráva při blokování <span class="text-slate-600">(nepovinné)</span>
+        </label>
+        <input type="text" name="locked_message" maxlength="255"
+               value="{{ device.locked_message if device and device.locked_message else '' }}"
+               placeholder="Dneska hotovo. Zeptej se táty."
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+        <p class="mt-1.5 text-xs text-slate-500">
+          Zobrazí se dítěti (a v device policy API), když je zařízení blokováno.
+        </p>
+      </div>
+
+      {% if error %}
+      <p class="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-2.5 text-sm text-red-400">
+        {{ error }}
+      </p>
+      {% endif %}
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
+                       text-white transition active:scale-95">
+          {{ 'Uložit' if device else 'Přidat zařízení' }}
+        </button>
+        <a href="/admin/children/{{ child.id }}"
+           class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
+                  hover:border-slate-500 hover:text-white transition">
+          Zrušit
+        </a>
+      </div>
+    </form>
+  </main>
+</body>
+</html>
