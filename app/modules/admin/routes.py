@@ -6,8 +6,9 @@ from flask import (
 )
 
 from ...extensions import db
-from ...models import (Child, Device, KioskTile, KioskVideo, PointTransaction,
-                       RewardTask, VideoCategory, extract_youtube_id)
+from ...models import (Child, ChildSchedule, DailyChore, Device, KioskTile, KioskVideo,
+                       PointTransaction, RewardTask, VideoCategory,
+                       VideoPriceRule, extract_youtube_id)
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -191,15 +192,18 @@ def video_new():
         if not yt_id:
             error = "Nepodařilo se rozpoznat YouTube URL nebo ID. Zkus přímý odkaz na video."
         else:
+            price_raw = request.form.get("price", "").strip()
             video = KioskVideo(
                 title=request.form["title"].strip(),
                 youtube_id=yt_id,
                 category_id=int(request.form["category_id"]),
                 enabled=True,
                 sort_order=int(request.form.get("sort_order") or 0),
+                price=int(price_raw) if price_raw else None,
             )
             db.session.add(video)
             db.session.commit()
+            _save_price_rules(video)
             return redirect(url_for("admin.videos"))
     preselect = request.args.get("cat", type=int)
     return render_template("admin/video_form.html",
@@ -217,10 +221,13 @@ def video_edit(vid_id):
         if not yt_id:
             error = "Nepodařilo se rozpoznat YouTube URL nebo ID."
         else:
+            price_raw = request.form.get("price", "").strip()
             video.title = request.form["title"].strip()
             video.youtube_id = yt_id
             video.category_id = int(request.form["category_id"])
             video.sort_order = int(request.form.get("sort_order") or 0)
+            video.price = int(price_raw) if price_raw else None
+            _save_price_rules(video)
             db.session.commit()
             return redirect(url_for("admin.videos"))
     return render_template("admin/video_form.html",
@@ -306,8 +313,12 @@ def child_detail(child_id):
     tasks = RewardTask.query.filter_by(active=True).order_by(RewardTask.sort_order, RewardTask.id).all()
     devices = child.devices.order_by(Device.name).all()
     txs = child.transactions.order_by(PointTransaction.created_at.desc()).limit(20).all()
+    chores = child.chores.order_by(DailyChore.weekday).all()
+    schedules = child.schedules.order_by(ChildSchedule.weekday, ChildSchedule.locked_from).all()
     return render_template("admin/child_detail.html",
-                           child=child, tasks=tasks, devices=devices, txs=txs)
+                           child=child, tasks=tasks, devices=devices, txs=txs,
+                           chores=chores, schedules=schedules,
+                           weekdays_short=WEEKDAYS_SHORT)
 
 
 @admin_bp.post("/children/<int:child_id>/award")
@@ -454,3 +465,119 @@ def task_delete(task_id):
     db.session.delete(task)
     db.session.commit()
     return redirect(url_for("admin.tasks"))
+
+
+# ── Daily Chores ──────────────────────────────────────────────────────────────
+
+WEEKDAYS_CS = ["Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle"]
+WEEKDAYS_SHORT = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"]
+
+
+@admin_bp.route("/children/<int:child_id>/chores/new", methods=["GET", "POST"])
+@admin_required
+def chore_new(child_id):
+    child = db.get_or_404(Child, child_id)
+    error = None
+    if request.method == "POST":
+        db.session.add(DailyChore(
+            child_id=child.id,
+            weekday=int(request.form["weekday"]),
+            chore_name=request.form["chore_name"].strip(),
+            chore_icon=request.form.get("chore_icon", "✅").strip() or "✅",
+            points_reward=int(request.form.get("points_reward", 5) or 5),
+            active=True,
+        ))
+        db.session.commit()
+        return redirect(url_for("admin.child_detail", child_id=child_id))
+    return render_template("admin/chore_form.html", child=child, chore=None,
+                           weekdays=WEEKDAYS_CS, error=error)
+
+
+@admin_bp.route("/chores/<int:chore_id>/edit", methods=["GET", "POST"])
+@admin_required
+def chore_edit(chore_id):
+    chore = db.get_or_404(DailyChore, chore_id)
+    error = None
+    if request.method == "POST":
+        chore.weekday = int(request.form["weekday"])
+        chore.chore_name = request.form["chore_name"].strip()
+        chore.chore_icon = request.form.get("chore_icon", chore.chore_icon).strip() or chore.chore_icon
+        chore.points_reward = int(request.form.get("points_reward", 5) or 5)
+        db.session.commit()
+        return redirect(url_for("admin.child_detail", child_id=chore.child_id))
+    return render_template("admin/chore_form.html", child=chore.child, chore=chore,
+                           weekdays=WEEKDAYS_CS, error=error)
+
+
+@admin_bp.post("/chores/<int:chore_id>/delete")
+@admin_required
+def chore_delete(chore_id):
+    chore = db.get_or_404(DailyChore, chore_id)
+    child_id = chore.child_id
+    db.session.delete(chore)
+    db.session.commit()
+    return redirect(url_for("admin.child_detail", child_id=child_id))
+
+
+# ── Child Schedule ────────────────────────────────────────────────────────────
+
+@admin_bp.route("/children/<int:child_id>/schedules/new", methods=["GET", "POST"])
+@admin_required
+def schedule_new(child_id):
+    child = db.get_or_404(Child, child_id)
+    error = None
+    if request.method == "POST":
+        from datetime import time as time_cls
+        def parse_time(val):
+            h, m = val.strip().split(":")
+            return time_cls(int(h), int(m))
+        weekday_raw = request.form.get("weekday", "").strip()
+        db.session.add(ChildSchedule(
+            child_id=child.id,
+            weekday=int(weekday_raw) if weekday_raw != "" else None,
+            locked_from=parse_time(request.form["locked_from"]),
+            locked_to=parse_time(request.form["locked_to"]),
+            message=request.form.get("message", "Kiosek je teď nedostupný.").strip()
+                    or "Kiosek je teď nedostupný.",
+        ))
+        db.session.commit()
+        return redirect(url_for("admin.child_detail", child_id=child_id))
+    return render_template("admin/schedule_form.html", child=child, schedule=None,
+                           weekdays=WEEKDAYS_CS, error=error)
+
+
+@admin_bp.post("/schedules/<int:schedule_id>/delete")
+@admin_required
+def schedule_delete(schedule_id):
+    s = db.get_or_404(ChildSchedule, schedule_id)
+    child_id = s.child_id
+    db.session.delete(s)
+    db.session.commit()
+    return redirect(url_for("admin.child_detail", child_id=child_id))
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _save_price_rules(video):
+    """Rebuild time-based price rules from posted form data."""
+    video.price_rules.delete()
+    froms = request.form.getlist("rule_from[]")
+    tos = request.form.getlist("rule_to[]")
+    prices = request.form.getlist("rule_price[]")
+    from datetime import time as time_cls
+    for f, t, p in zip(froms, tos, prices):
+        f, t, p = f.strip(), t.strip(), p.strip()
+        if not (f and t and p):
+            continue
+        try:
+            fh, fm = f.split(":")
+            th, tm = t.split(":")
+            db.session.add(VideoPriceRule(
+                video_id=video.id,
+                time_from=time_cls(int(fh), int(fm)),
+                time_to=time_cls(int(th), int(tm)),
+                price=int(p),
+            ))
+        except (ValueError, AttributeError):
+            pass
+    db.session.commit()

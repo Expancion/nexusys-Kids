@@ -83,6 +83,55 @@
                       focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
       </div>
 
+      <!-- Price override -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">
+          Cena videa (body)
+          <span class="text-slate-500 font-normal">— prázdné = použije se nastavení dítěte</span>
+        </label>
+        <input type="number" name="price" min="0" max="9999"
+               value="{{ video.price if (video and video.price is not none) else '' }}"
+               placeholder="Výchozí cena dítěte"
+               class="w-44 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- Time-based price rules -->
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <label class="text-sm font-bold text-slate-300">
+            Časové slevy
+            <span class="text-slate-500 font-normal">— cena v daný čas (např. pohádka zdarma 19:00–20:30)</span>
+          </label>
+          <button type="button" onclick="addRule()"
+                  class="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition">
+            + Přidat
+          </button>
+        </div>
+        <div id="rules-list" class="space-y-2">
+          {% if video %}
+          {% for rule in video.price_rules.all() %}
+          <div class="rule-row flex items-center gap-2">
+            <input type="time" name="rule_from[]" value="{{ rule.time_from.strftime('%H:%M') }}"
+                   class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white text-sm
+                          focus:outline-none focus:border-indigo-500 transition" />
+            <span class="text-slate-500 text-sm shrink-0">→</span>
+            <input type="time" name="rule_to[]" value="{{ rule.time_to.strftime('%H:%M') }}"
+                   class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white text-sm
+                          focus:outline-none focus:border-indigo-500 transition" />
+            <input type="number" name="rule_price[]" min="0" max="9999"
+                   value="{{ rule.price }}" placeholder="Body"
+                   class="w-24 rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white text-sm
+                          focus:outline-none focus:border-indigo-500 transition" />
+            <button type="button" onclick="this.closest('.rule-row').remove()"
+                    class="text-red-400 hover:text-red-300 text-lg px-1 transition shrink-0">×</button>
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
       {% if error %}
       <p class="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-2.5 text-sm text-red-400">
         {{ error }}
@@ -114,6 +163,26 @@
       if (m) return m[1];
       if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
       return null;
+    }
+
+    function addRule() {
+      const row = document.createElement('div');
+      row.className = 'rule-row flex items-center gap-2';
+      row.innerHTML = `
+        <input type="time" name="rule_from[]" value="19:00"
+               class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white text-sm
+                      focus:outline-none focus:border-indigo-500 transition" />
+        <span class="text-slate-500 text-sm shrink-0">→</span>
+        <input type="time" name="rule_to[]" value="20:30"
+               class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white text-sm
+                      focus:outline-none focus:border-indigo-500 transition" />
+        <input type="number" name="rule_price[]" min="0" max="9999" value="0" placeholder="Body"
+               class="w-24 rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white text-sm
+                      focus:outline-none focus:border-indigo-500 transition" />
+        <button type="button" onclick="this.closest('.rule-row').remove()"
+                class="text-red-400 hover:text-red-300 text-lg px-1 transition shrink-0">×</button>
+      `;
+      document.getElementById('rules-list').appendChild(row);
     }
 
     function updatePreview(raw) {

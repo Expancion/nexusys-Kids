@@ -173,6 +173,98 @@
       {% endif %}
     </div>
 
+    <!-- Weekly Chores -->
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-black text-white">📋 Týdenní úkoly</h3>
+        <a href="/admin/children/{{ child.id }}/chores/new"
+           class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
+                  text-slate-300 hover:text-white transition">
+          + Přidat úkol
+        </a>
+      </div>
+
+      {% if chores %}
+      <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
+        {% for chore in chores %}
+        <div class="flex items-center gap-4 px-5 py-3 hover:bg-slate-900/50 transition">
+          <span class="text-2xl select-none w-8 text-center shrink-0">{{ chore.chore_icon }}</span>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-white">{{ chore.chore_name }}</div>
+            <div class="text-xs text-slate-500">
+              {{ weekdays_short[chore.weekday] }} · +{{ chore.points_reward }} ⭐
+            </div>
+          </div>
+          <div class="flex gap-2 shrink-0">
+            <a href="/admin/chores/{{ chore.id }}/edit"
+               class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
+                      font-bold text-slate-300 transition">
+              Upravit
+            </a>
+            <form method="post" action="/admin/chores/{{ chore.id }}/delete"
+                  onsubmit="return confirm('Smazat úkol?')">
+              <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
+                             font-bold text-red-400 transition">
+                Smazat
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-2xl border border-dashed border-slate-800 py-5 px-6
+                  text-sm text-slate-500 text-center">
+        Žádné úkoly —
+        <a href="/admin/children/{{ child.id }}/chores/new"
+           class="text-indigo-400 hover:text-indigo-300">přidej první týdenní úkol</a>
+        a dítě si ho splní z kiosku.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Time schedules -->
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="font-black text-white">🔒 Časové zámky</h3>
+        <a href="/admin/children/{{ child.id }}/schedules/new"
+           class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
+                  text-slate-300 hover:text-white transition">
+          + Přidat zámek
+        </a>
+      </div>
+
+      {% if schedules %}
+      <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
+        {% for s in schedules %}
+        <div class="flex items-center gap-4 px-5 py-3 hover:bg-slate-900/50 transition">
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-white tabular-nums">
+              {{ s.locked_from.strftime('%H:%M') }} → {{ s.locked_to.strftime('%H:%M') }}
+            </div>
+            <div class="text-xs text-slate-500">
+              {{ weekdays_short[s.weekday] if s.weekday is not none else 'Každý den' }}
+              · {{ s.message }}
+            </div>
+          </div>
+          <form method="post" action="/admin/schedules/{{ s.id }}/delete"
+                onsubmit="return confirm('Smazat časový zámek?')">
+            <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
+                           font-bold text-red-400 transition">
+              Smazat
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-2xl border border-dashed border-slate-800 py-5 px-6
+                  text-sm text-slate-500 text-center">
+        Žádné časové zámky — kiosek je kdykoli dostupný.
+      </div>
+      {% endif %}
+    </div>
+
     <!-- Transaction history -->
     <div class="space-y-3">
       <h3 class="font-black text-white">Historie bodů <span class="text-slate-600 font-normal text-sm">(posledních 20)</span></h3>

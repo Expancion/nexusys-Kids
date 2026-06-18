@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ 'Upravit úkol' if chore else 'Nový úkol' }} — {{ child.name }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
+              bg-slate-950/90 backdrop-blur px-6 py-3">
+    <a href="/admin/children/{{ child.id }}" class="text-slate-400 hover:text-white transition">←</a>
+    <span class="font-black text-white">
+      {{ 'Upravit úkol' if chore else 'Nový úkol' }} — {{ child.name }}
+    </span>
+  </nav>
+
+  <main class="max-w-lg mx-auto px-6 py-8">
+    <form method="post" class="space-y-6">
+
+      <!-- Icon + name preview -->
+      <div class="flex items-center gap-4 rounded-2xl bg-slate-900 border border-slate-800 p-5">
+        <div id="icon-preview" class="text-5xl select-none w-14 text-center">
+          {{ chore.chore_icon if chore else '✅' }}
+        </div>
+        <div>
+          <div id="name-preview" class="font-black text-white text-lg">
+            {{ chore.chore_name if chore else 'Nový úkol' }}
+          </div>
+          <div id="pts-preview" class="text-yellow-400 font-black text-sm">
+            +{{ chore.points_reward if chore else 5 }} ⭐
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Icon -->
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona</label>
+          <input type="text" name="chore_icon" maxlength="4"
+                 value="{{ chore.chore_icon if chore else '✅' }}"
+                 oninput="document.getElementById('icon-preview').textContent=this.value||'✅'"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        text-2xl focus:outline-none focus:border-indigo-500 transition text-center" />
+        </div>
+        <!-- Points -->
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">Body za splnění</label>
+          <input type="number" name="points_reward" min="1" max="999" required
+                 value="{{ chore.points_reward if chore else 5 }}"
+                 oninput="document.getElementById('pts-preview').textContent='+'+this.value+' ⭐'"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        focus:outline-none focus:border-indigo-500 transition" />
+        </div>
+      </div>
+
+      <!-- Name -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Název úkolu</label>
+        <input type="text" name="chore_name" required maxlength="100"
+               value="{{ chore.chore_name if chore else '' }}"
+               placeholder="Uklidit pokoj"
+               oninput="document.getElementById('name-preview').textContent=this.value||'Nový úkol'"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition" />
+      </div>
+
+      <!-- Weekday -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">Den v týdnu</label>
+        <select name="weekday"
+                class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                       focus:outline-none focus:border-indigo-500 transition">
+          {% for day in weekdays %}
+          {% set i = loop.index0 %}
+          <option value="{{ i }}" {{ 'selected' if chore and chore.weekday == i }}>
+            {{ day }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% if error %}
+      <p class="rounded-xl bg-red-500/10 border border-red-500/30 px-4 py-2.5 text-sm text-red-400">
+        {{ error }}
+      </p>
+      {% endif %}
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
+                       text-white transition active:scale-95">
+          {{ 'Uložit' if chore else 'Přidat úkol' }}
+        </button>
+        <a href="/admin/children/{{ child.id }}"
+           class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
+                  hover:border-slate-500 hover:text-white transition">Zrušit</a>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

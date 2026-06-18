@@ -4,6 +4,15 @@
   {% include '_kiosk_head.html' %}
   <title>{{ child.name }} — kiosek</title>
   <style>
+    .section { display: none; flex-direction: column; flex: 1; }
+    .section.active { display: flex; }
+
+    /* Cards */
+    .kiosk-card { transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s; cursor: pointer; }
+    .kiosk-card:hover { transform: scale(1.04) translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+    .kiosk-card:active { transform: scale(.97); }
+
+    /* Video cards */
     .video-card { transition: transform .18s cubic-bezier(.34,1.56,.64,1); cursor: pointer; }
     .video-card:hover { transform: scale(1.05) translateY(-3px); }
     .video-card:active { transform: scale(.97); }
@@ -12,66 +21,136 @@
     .cat-btn { transition: all .2s ease; border: 2px solid transparent; }
     .cat-btn.active { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.35); }
     .cat-btn:not(.active):hover { background: rgba(255,255,255,.08); }
+
+    /* Chore calendar */
+    .chore-col-today .col-header { color: #facc15; }
+    .chore-col-today .col-stripe { background: rgba(250,204,21,.06); border-color: rgba(250,204,21,.2); }
+    .chore-card-done { background: rgba(34,197,94,.15) !important; border-color: rgba(34,197,94,.3) !important; }
+    .chore-card-tap { cursor: pointer; }
+    .chore-card-tap:hover { background: rgba(255,255,255,.12) !important; }
+    .chore-card-tap:active { transform: scale(.96); }
   </style>
 </head>
 <body class="min-h-screen text-white overflow-x-hidden">
 
-  <div class="stars" id="stars"></div>
-  {% include '_iframe_overlay.html' %}
+<div class="stars" id="stars"></div>
+{% include '_iframe_overlay.html' %}
 
-  <!-- No-points overlay -->
-  <div id="no-points-overlay"
-       class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center
-              bg-slate-950/95 backdrop-blur-sm px-8">
-    <div class="text-8xl mb-6 select-none">🔒</div>
-    <h2 class="text-3xl font-black text-white mb-3 text-center">Nemáš dost bodů!</h2>
-    <p id="no-points-msg" class="text-white/60 text-center max-w-sm mb-8 text-lg">
-      Vydělej si body splněním úkolů od rodiče.
-    </p>
-    <button onclick="document.getElementById('no-points-overlay').classList.add('hidden')"
-            class="rounded-2xl bg-slate-800 hover:bg-slate-700 px-10 py-4 text-xl
-                   font-black text-white transition active:scale-95">
-      OK
-    </button>
-  </div>
+<!-- No-points overlay -->
+<div id="no-points-overlay"
+     class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center
+            bg-slate-950/95 backdrop-blur-sm px-8">
+  <div class="text-8xl mb-6 select-none">🔒</div>
+  <h2 class="text-3xl font-black text-white mb-3 text-center">Nemáš dost bodů!</h2>
+  <p id="no-points-msg" class="text-white/60 text-center max-w-sm mb-8 text-lg">
+    Vydělej si body splněním úkolů.
+  </p>
+  <button onclick="document.getElementById('no-points-overlay').classList.add('hidden')"
+          class="rounded-2xl bg-slate-800 hover:bg-slate-700 px-10 py-4 text-xl
+                 font-black text-white transition active:scale-95">
+    OK
+  </button>
+</div>
 
-  <div class="relative z-10 flex flex-col min-h-screen">
+<!-- Locked overlay (time-based schedule) -->
+<div id="locked-overlay"
+     class="{{ '' if locked_msg else 'hidden' }} fixed inset-0 z-50 flex flex-col items-center
+            justify-center bg-slate-950/97 backdrop-blur-sm px-8">
+  <div class="text-8xl mb-6 select-none">🌙</div>
+  <h2 class="text-3xl font-black text-white mb-3 text-center">Kiosek je zamčený</h2>
+  <p id="locked-msg" class="text-white/60 text-center max-w-sm text-lg">
+    {{ locked_msg or '' }}
+  </p>
+</div>
 
-    <!-- Header -->
-    <header class="flex items-center justify-between px-8 pt-7 pb-2 shrink-0 gap-4">
+<!-- Chore toast -->
+<div id="chore-toast"
+     class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-40
+            rounded-2xl bg-emerald-500 px-6 py-3 text-white font-black text-lg
+            shadow-2xl transition-all">
+</div>
 
-      <!-- Child identity -->
-      <div class="flex items-center gap-3 min-w-0">
-        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
-             style="background: {{ child.avatar_color }};">
-          {{ child.avatar_icon }}
-        </div>
-        <div class="min-w-0">
-          <div class="text-xl font-black text-white leading-none truncate">{{ child.name }}</div>
-          <div class="text-xs text-white/40 font-bold mt-0.5">Co si dneska pustíš?</div>
+<div class="relative z-10 flex flex-col min-h-screen">
+
+  <!-- Shared header -->
+  <header class="flex items-center justify-between px-8 pt-7 pb-2 shrink-0 gap-4">
+    <div class="flex items-center gap-3 min-w-0">
+      <!-- Back button (hidden on home) -->
+      <button id="back-btn"
+              onclick="showSection('home')"
+              class="hidden w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 items-center
+                     justify-center text-white text-xl transition active:scale-95 shrink-0">
+        ←
+      </button>
+      <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
+           style="background: {{ child.avatar_color }};">
+        {{ child.avatar_icon }}
+      </div>
+      <div class="min-w-0">
+        <div class="text-xl font-black text-white leading-none truncate">{{ child.name }}</div>
+        <div id="section-subtitle" class="text-xs text-white/40 font-bold mt-0.5">Co si dneska dáš?</div>
+      </div>
+    </div>
+
+    <div class="flex flex-col items-center shrink-0">
+      <div class="flex items-baseline gap-1">
+        <span class="text-4xl font-black text-yellow-400 leading-none tabular-nums"
+              id="points-display">{{ child.points }}</span>
+        <span class="text-yellow-500/70 font-bold text-sm">⭐</span>
+      </div>
+      <div class="text-xs text-white/40 font-bold mt-0.5">
+        {{ child.video_cost }} ⭐ / video
+      </div>
+    </div>
+
+    <div class="text-right min-w-[8rem] shrink-0">
+      <div id="clock" class="text-2xl font-black text-white tabular-nums"></div>
+      <div id="date" class="text-xs text-white/40 font-bold mt-0.5 capitalize"></div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ SECTION: home ═══════════════ -->
+  <section id="section-home" class="section active flex-1 items-center justify-center px-8 py-10">
+    <div class="w-full max-w-2xl grid grid-cols-2 gap-6">
+
+      <!-- Videos card -->
+      <div class="kiosk-card rounded-3xl overflow-hidden"
+           onclick="showSection('videos')"
+           style="background: linear-gradient(135deg,#ef4444,#b91c1c); aspect-ratio: 1/1;"
+           role="button">
+        <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
+          <span class="text-7xl select-none">🎬</span>
+          <div class="text-center">
+            <div class="text-2xl font-black text-white">Videa</div>
+            <div class="text-sm text-white/70 mt-1">
+              {{ videos | length }} videí k dispozici
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Points balance -->
-      <div class="flex flex-col items-center shrink-0">
-        <div class="flex items-baseline gap-1">
-          <span class="text-4xl font-black text-yellow-400 leading-none tabular-nums"
-                id="points-display">{{ child.points }}</span>
-          <span class="text-yellow-500/70 font-bold text-sm">⭐</span>
-        </div>
-        <div class="text-xs text-white/40 font-bold mt-0.5">
-          {{ child.video_cost }} ⭐ / video
+      <!-- Chores card -->
+      <div class="kiosk-card rounded-3xl overflow-hidden"
+           onclick="showSection('chores')"
+           style="background: linear-gradient(135deg,#6366f1,#4338ca); aspect-ratio: 1/1;"
+           role="button">
+        <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
+          <span class="text-7xl select-none">📋</span>
+          <div class="text-center">
+            <div class="text-2xl font-black text-white">Úkoly</div>
+            <div class="text-sm text-white/70 mt-1" id="chores-summary">
+              Týdenní plán
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Clock -->
-      <div class="text-right min-w-[8rem] shrink-0">
-        <div id="clock" class="text-2xl font-black text-white tabular-nums"></div>
-        <div id="date" class="text-xs text-white/40 font-bold mt-0.5 capitalize"></div>
-      </div>
-    </header>
+    </div>
+  </section>
 
-    <!-- Category tabs -->
+  <!-- ═══════════════ SECTION: videos ═══════════════ -->
+  <section id="section-videos" class="section">
+
     <nav class="flex gap-2 px-8 pt-4 pb-1 shrink-0 flex-wrap items-center">
       <button onclick="filterCat('all', this)"
               class="cat-btn active rounded-2xl px-5 py-2 text-sm font-black text-white bg-white/10">
@@ -85,11 +164,8 @@
       {% endfor %}
     </nav>
 
-    <!-- Video grid -->
-    <main id="grid"
-          class="flex-1 grid gap-4 px-8 py-5 content-start
-                 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-
+    <main class="flex-1 grid gap-4 px-8 py-5 content-start
+                 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 overflow-y-auto">
       {% for video in videos %}
       <button class="video-card group text-left"
               data-cat-id="{{ video.category_id }}"
@@ -104,7 +180,7 @@
           </div>
           <div class="absolute top-2 right-2 bg-black/70 backdrop-blur rounded-full
                       px-2.5 py-0.5 text-xs font-black text-yellow-400">
-            ⭐ {{ child.video_cost }}
+            {% if video.price is not none %}⭐ {{ video.price }}{% else %}⭐ {{ child.video_cost }}{% endif %}
           </div>
         </div>
         <p class="mt-1.5 text-xs font-bold text-white/80 leading-tight px-0.5 line-clamp-2">
@@ -119,62 +195,238 @@
         <p class="text-lg font-bold">Zatím žádná videa — rodič je přidá v panelu</p>
       </div>
       {% endif %}
-
     </main>
-  </div>
+  </section>
 
-  <script>
-    // ── Clock ──────────────────────────────────────────
-    const clockEl = document.getElementById('clock');
-    const dateEl  = document.getElementById('date');
-    function tick() {
-      const now = new Date();
-      clockEl.textContent = now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
-      dateEl.textContent  = now.toLocaleDateString('cs-CZ', {weekday:'long', day:'numeric', month:'long'});
+  <!-- ═══════════════ SECTION: chores ═══════════════ -->
+  <section id="section-chores" class="section flex-col">
+    <div class="px-8 pt-4 pb-2 shrink-0">
+      <p class="text-sm text-white/40 font-bold">Splni úkol → získej body ⭐</p>
+    </div>
+    <div id="chore-calendar"
+         class="flex-1 flex gap-2 px-8 pb-6 pt-2 overflow-x-auto">
+      <!-- Built by JS -->
+    </div>
+  </section>
+
+</div><!-- /relative -->
+
+<script>
+// ── Data from server ───────────────────────────────────────────────────────
+const CHILD_ID   = {{ child.id }};
+const CHORES     = {{ chores_json | safe }};
+const DONE_TODAY = {{ done_today_json | safe }};
+const SCHEDULES  = {{ schedules_json | safe }};
+const TODAY_WD   = {{ today_wd }};  // 0=Mon, 6=Sun
+
+// ── Clock ───────────────────────────────────────────────────────────────────
+const clockEl = document.getElementById('clock');
+const dateEl  = document.getElementById('date');
+function tick() {
+  const now = new Date();
+  clockEl.textContent = now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
+  dateEl.textContent  = now.toLocaleDateString('cs-CZ', {weekday:'long', day:'numeric', month:'long'});
+  checkScheduleLock(now);
+}
+tick(); setInterval(tick, 30000);
+
+// ── Stars ───────────────────────────────────────────────────────────────────
+const se = document.getElementById('stars');
+for (let i = 0; i < 90; i++) {
+  const s = document.createElement('div');
+  const z = Math.random() * 2.5 + .5;
+  s.className = 'star';
+  s.style.cssText = `width:${z}px;height:${z}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--delay:-${(Math.random()*5).toFixed(1)}s;`;
+  se.appendChild(s);
+}
+
+// ── Section navigation ──────────────────────────────────────────────────────
+const SUBTITLES = {
+  home: 'Co si dneska dáš?',
+  videos: '🎬 Videa',
+  chores: '📋 Úkoly týdne',
+};
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  document.getElementById('back-btn').classList.toggle('hidden', id === 'home');
+  document.getElementById('back-btn').classList.toggle('flex', id !== 'home');
+  document.getElementById('section-subtitle').textContent = SUBTITLES[id] || '';
+  if (id === 'chores') buildCalendar();
+}
+
+// ── Category filter ─────────────────────────────────────────────────────────
+function filterCat(catId, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.video-card').forEach(el => {
+    el.style.display = (catId === 'all' || el.dataset.catId == catId) ? '' : 'none';
+  });
+}
+
+// ── Watch video (deduct points) ─────────────────────────────────────────────
+async function watchVideo(childId, videoId, embedUrl, title) {
+  try {
+    const resp = await fetch('/api/kiosk/watch', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({child_id: childId, video_id: videoId}),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      document.getElementById('points-display').textContent = data.new_balance;
+      openTile(embedUrl, title);
+    } else {
+      document.getElementById('no-points-msg').textContent =
+        data.message || 'Nemáš dost bodů!';
+      document.getElementById('no-points-overlay').classList.remove('hidden');
     }
-    tick(); setInterval(tick, 1000);
+  } catch {
+    openTile(embedUrl, title);
+  }
+}
 
-    // ── Stars ──────────────────────────────────────────
-    const se = document.getElementById('stars');
-    for (let i = 0; i < 90; i++) {
-      const s = document.createElement('div');
-      const z = Math.random() * 2.5 + .5;
-      s.className = 'star';
-      s.style.cssText = `width:${z}px;height:${z}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--delay:-${(Math.random()*5).toFixed(1)}s;`;
-      se.appendChild(s);
-    }
+// ── Chore calendar ──────────────────────────────────────────────────────────
+const DAYS_CS = ['Po','Út','St','Čt','Pá','So','Ne'];
 
-    // ── Category filter ────────────────────────────────
-    function filterCat(catId, btn) {
-      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.video-card').forEach(el => {
-        el.style.display = (catId === 'all' || el.dataset.catId == catId) ? '' : 'none';
+function buildCalendar() {
+  const cal = document.getElementById('chore-calendar');
+  cal.innerHTML = '';
+  const today = new Date();
+  const todayWd = (today.getDay() + 6) % 7;  // 0=Mon
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - todayWd);
+
+  let todayChores = 0, todayDone = 0;
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const isToday = i === todayWd;
+    const isPast  = i < todayWd;
+
+    const col = document.createElement('div');
+    col.className = 'flex-1 min-w-[90px] flex flex-col gap-2' +
+                    (isToday ? ' chore-col-today' : '');
+
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'col-header text-center font-black text-sm pb-1 border-b border-white/10';
+    hdr.innerHTML = `${DAYS_CS[i]}<br><span class="text-xs font-bold opacity-60">${d.getDate()}.</span>`;
+    col.appendChild(hdr);
+
+    // Column stripe
+    const stripe = document.createElement('div');
+    stripe.className = 'col-stripe flex-1 rounded-2xl border border-white/5 p-2 flex flex-col gap-2' +
+                       (isToday ? ' border-yellow-400/20 bg-yellow-400/5' : ' bg-white/3');
+
+    const dayChores = CHORES[String(i)] || [];
+    if (dayChores.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'flex-1 flex items-center justify-center';
+      empty.innerHTML = '<span class="text-2xl opacity-20">—</span>';
+      stripe.appendChild(empty);
+    } else {
+      dayChores.forEach(chore => {
+        if (isToday) { todayChores++; if (chore.done) todayDone++; }
+        const card = buildChoreCard(chore, isToday, isPast);
+        stripe.appendChild(card);
       });
     }
 
-    // ── Watch video (deduct points) ────────────────────
-    async function watchVideo(childId, videoId, embedUrl, title) {
-      try {
-        const resp = await fetch('/api/kiosk/watch', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({child_id: childId, video_id: videoId}),
-        });
-        const data = await resp.json();
-        if (data.ok) {
-          document.getElementById('points-display').textContent = data.new_balance;
-          openTile(embedUrl, title);
-        } else {
-          document.getElementById('no-points-msg').textContent =
-            data.message || 'Nemáš dost bodů!';
-          document.getElementById('no-points-overlay').classList.remove('hidden');
-        }
-      } catch (err) {
-        // Network error — let video play without deducting (offline fallback)
-        openTile(embedUrl, title);
-      }
+    col.appendChild(stripe);
+    cal.appendChild(col);
+  }
+
+  // Update home card summary
+  const summary = document.getElementById('chores-summary');
+  if (todayChores > 0) {
+    summary.textContent = todayDone === todayChores
+      ? `Dnes vše splněno ✓`
+      : `Dnes: ${todayDone}/${todayChores} splněno`;
+  } else {
+    summary.textContent = 'Týdenní plán';
+  }
+}
+
+function buildChoreCard(chore, isToday, isPast) {
+  const isDone = DONE_TODAY.includes(chore.id);
+  const card = document.createElement('div');
+  card.className = 'rounded-xl p-2 text-center flex flex-col items-center gap-1 border transition-all ' +
+    (isDone
+      ? 'chore-card-done border-emerald-500/30'
+      : isToday
+        ? 'border-white/15 bg-white/8 chore-card-tap'
+        : 'border-white/5 bg-white/3 opacity-60');
+
+  card.innerHTML =
+    `<div class="text-2xl select-none">${chore.icon}</div>` +
+    `<div class="text-xs font-bold leading-tight ${isDone ? 'text-emerald-300' : 'text-white/80'}">${chore.name}</div>` +
+    `<div class="text-xs font-black ${isDone ? 'text-emerald-400' : 'text-yellow-400'}">` +
+      (isDone ? '✓ Hotovo' : `+${chore.points}⭐`) +
+    `</div>`;
+
+  if (isToday && !isDone) {
+    card.addEventListener('click', () => confirmChore(chore));
+  }
+  return card;
+}
+
+async function confirmChore(chore) {
+  if (!confirm(`Splnil jsi úkol?\n\n${chore.icon} ${chore.name}\n\nZískaš: +${chore.points} ⭐`)) return;
+  try {
+    const resp = await fetch('/api/kiosk/chore/complete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({child_id: CHILD_ID, chore_id: chore.id}),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      DONE_TODAY.push(chore.id);
+      document.getElementById('points-display').textContent = data.new_balance;
+      buildCalendar();
+      showToast(`+${data.awarded} ⭐ ${data.chore_name} splněno! 🎉`);
+    } else {
+      showToast(data.message || 'Chyba', true);
     }
-  </script>
+  } catch {
+    showToast('Chyba připojení', true);
+  }
+}
+
+function showToast(msg, isError = false) {
+  const el = document.getElementById('chore-toast');
+  el.textContent = msg;
+  el.className = el.className.replace('hidden', '');
+  el.classList.remove('hidden', 'bg-red-500', 'bg-emerald-500');
+  el.classList.add(isError ? 'bg-red-500' : 'bg-emerald-500');
+  setTimeout(() => el.classList.add('hidden'), 3000);
+}
+
+// ── Schedule lock ───────────────────────────────────────────────────────────
+function checkScheduleLock(now) {
+  const wd = (now.getDay() + 6) % 7;  // 0=Mon
+  const hm = now.getHours() * 60 + now.getMinutes();
+
+  for (const s of SCHEDULES) {
+    if (s.weekday !== null && s.weekday !== wd) continue;
+    const [fh, fm] = s.from.split(':').map(Number);
+    const [th, tm] = s.to.split(':').map(Number);
+    const from = fh * 60 + fm;
+    const to   = th * 60 + tm;
+    const locked = from <= to ? (hm >= from && hm <= to) : (hm >= from || hm <= to);
+    if (locked) {
+      document.getElementById('locked-msg').textContent = s.message;
+      document.getElementById('locked-overlay').classList.remove('hidden');
+      return;
+    }
+  }
+  // Not locked — hide overlay if it was shown by server
+  // (only hides clock-triggered re-checks, not the initial server-side lock)
+}
+
+// Initial calendar summary on home
+buildCalendar();
+</script>
 </body>
 </html>

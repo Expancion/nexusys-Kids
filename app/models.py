@@ -39,6 +39,10 @@ class KioskVideo(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey("video_category.id"), nullable=False)
     enabled = db.Column(db.Boolean, default=True, nullable=False)
     sort_order = db.Column(db.Integer, default=0)
+    price = db.Column(db.Integer, nullable=True)  # None = use child.video_cost
+
+    price_rules = db.relationship("VideoPriceRule", backref="video", lazy="dynamic",
+                                  cascade="all, delete-orphan")
 
     @property
     def embed_url(self):
@@ -47,6 +51,16 @@ class KioskVideo(db.Model):
     @property
     def thumb_url(self):
         return f"https://img.youtube.com/vi/{self.youtube_id}/mqdefault.jpg"
+
+
+class VideoPriceRule(db.Model):
+    """Time-based price override for a video (e.g. fairy tale is free 19:00–20:30)."""
+    __tablename__ = "video_price_rule"
+    id = db.Column(db.Integer, primary_key=True)
+    video_id = db.Column(db.Integer, db.ForeignKey("kiosk_video.id", ondelete="CASCADE"), nullable=False)
+    time_from = db.Column(db.Time, nullable=False)
+    time_to = db.Column(db.Time, nullable=False)
+    price = db.Column(db.Integer, nullable=False, default=0)
 
 
 class Child(db.Model):
@@ -66,6 +80,10 @@ class Child(db.Model):
                                    cascade="all, delete-orphan")
     watch_sessions = db.relationship("WatchSession", backref="child", lazy="dynamic",
                                      cascade="all, delete-orphan")
+    chores = db.relationship("DailyChore", backref="child", lazy="dynamic",
+                             cascade="all, delete-orphan")
+    schedules = db.relationship("ChildSchedule", backref="child", lazy="dynamic",
+                                cascade="all, delete-orphan")
 
 
 class Device(db.Model):
@@ -103,6 +121,43 @@ class WatchSession(db.Model):
     device_key = db.Column(db.String(80), nullable=True)
     points_spent = db.Column(db.Integer, nullable=False, default=0)
     started_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class DailyChore(db.Model):
+    """Weekly repeating chore assigned to a child for a specific weekday (0=Mon, 6=Sun)."""
+    __tablename__ = "daily_chore"
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey("child.id", ondelete="CASCADE"), nullable=False)
+    weekday = db.Column(db.Integer, nullable=False)  # 0=Mon, 6=Sun
+    chore_name = db.Column(db.String(100), nullable=False)
+    chore_icon = db.Column(db.String(10), nullable=False, default="✅")
+    points_reward = db.Column(db.Integer, nullable=False, default=5)
+    active = db.Column(db.Boolean, nullable=False, default=True)
+
+    completions = db.relationship("ChoreCompletion", backref="chore", lazy="dynamic",
+                                  cascade="all, delete-orphan")
+
+
+class ChoreCompletion(db.Model):
+    """Records that a child completed a chore on a specific date."""
+    __tablename__ = "chore_completion"
+    id = db.Column(db.Integer, primary_key=True)
+    chore_id = db.Column(db.Integer, db.ForeignKey("daily_chore.id", ondelete="CASCADE"), nullable=False)
+    child_id = db.Column(db.Integer, db.ForeignKey("child.id", ondelete="CASCADE"), nullable=False)
+    completed_date = db.Column(db.Date, nullable=False)
+    awarded_points = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ChildSchedule(db.Model):
+    """Time window during which the kiosk is locked for a child."""
+    __tablename__ = "child_schedule"
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey("child.id", ondelete="CASCADE"), nullable=False)
+    weekday = db.Column(db.Integer, nullable=True)  # None = every day
+    locked_from = db.Column(db.Time, nullable=False)
+    locked_to = db.Column(db.Time, nullable=False)
+    message = db.Column(db.String(200), nullable=False, default="Kiosek je teď nedostupný.")
 
 
 def extract_youtube_id(raw: str) -> str | None:

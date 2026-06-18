@@ -1,7 +1,10 @@
+from datetime import date as date_cls, datetime as dt_cls
+
 from flask import Blueprint, jsonify, request
 
 from ...extensions import db
-from ...models import Child, Device, KioskVideo, PointTransaction, WatchSession
+from ...models import (Child, ChoreCompletion, DailyChore, Device, KioskVideo,
+                       PointTransaction, VideoPriceRule, WatchSession)
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -53,8 +56,9 @@ def kiosk_watch():
         return jsonify({"ok": False, "reason": "missing_child_id"}), 400
 
     child = db.get_or_404(Child, child_id)
+    cost = _resolve_video_cost(video_id, child.video_cost)
 
-    if child.points < child.video_cost:
+    if child.points < cost:
         return jsonify({
             "ok": False,
             "reason": "not_enough_points",
@@ -62,21 +66,68 @@ def kiosk_watch():
             "balance": child.points,
         })
 
-    child.points -= child.video_cost
-
-    tx = PointTransaction(
-        child_id=child.id,
-        delta=-child.video_cost,
-        reason="Přehrání videa",
-        actor="system",
-    )
-    ws = WatchSession(
-        child_id=child.id,
-        video_id=video_id or None,
-        device_key=device_key or None,
-        points_spent=child.video_cost,
-    )
-    db.session.add_all([tx, ws])
+    child.points -= cost
+    db.session.add_all([
+        PointTransaction(child_id=child.id, delta=-cost, reason="Přehrání videa", actor="system"),
+        WatchSession(child_id=child.id, video_id=video_id or None,
+                     device_key=device_key or None, points_spent=cost),
+    ])
     db.session.commit()
 
     return jsonify({"ok": True, "new_balance": child.points})
+
+
+@api_bp.post("/kiosk/chore/complete")
+def kiosk_chore_complete():
+    data = request.get_json(silent=True) or {}
+    child_id = data.get("child_id")
+    chore_id = data.get("chore_id")
+
+    if not child_id or not chore_id:
+        return jsonify({"ok": False, "reason": "missing_params"}), 400
+
+    child = db.get_or_404(Child, child_id)
+    chore = db.get_or_404(DailyChore, chore_id)
+
+    if chore.child_id != child.id:
+        return jsonify({"ok": False, "reason": "not_your_chore"}), 403
+
+    today = date_cls.today()
+    if ChoreCompletion.query.filter_by(chore_id=chore_id, child_id=child_id, completed_date=today).first():
+        return jsonify({
+            "ok": False,
+            "reason": "already_done",
+            "message": f"Úkol '{chore.chore_name}' jsi dnes už splnil! 🎉",
+        })
+
+    child.points += chore.points_reward
+    db.session.add_all([
+        ChoreCompletion(chore_id=chore_id, child_id=child_id,
+                        completed_date=today, awarded_points=chore.points_reward),
+        PointTransaction(child_id=child.id, delta=chore.points_reward,
+                         reason=f"Úkol: {chore.chore_name}", actor="kiosk"),
+    ])
+    db.session.commit()
+
+    return jsonify({"ok": True, "awarded": chore.points_reward,
+                    "new_balance": child.points, "chore_name": chore.chore_name})
+
+
+def _resolve_video_cost(video_id, default_cost: int) -> int:
+    if not video_id:
+        return default_cost
+    video = db.session.get(KioskVideo, video_id)
+    if not video:
+        return default_cost
+
+    now_time = dt_cls.now().time()
+    for rule in video.price_rules.all():
+        in_window = (
+            rule.time_from <= now_time <= rule.time_to
+            if rule.time_from <= rule.time_to
+            else now_time >= rule.time_from or now_time <= rule.time_to
+        )
+        if in_window:
+            return rule.price
+
+    return video.price if video.price is not None else default_cost
