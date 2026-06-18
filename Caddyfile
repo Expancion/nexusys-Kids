@@ -1,15 +1,15 @@
 # Nexus Junior — Caddy reverse proxy
-#
-# Lokální síť bez domény → HTTP na portu 80
-# Pro HTTPS s lokálním certifikátem zakomentuj blok níže a odkomentuj „tls internal"
+# tls internal = Caddy si vystaví vlastní lokální certifikát (HTTPS na portu 443)
+# Pro důvěru certifikátu na klientech stáhni Caddy root CA:
+#   docker compose exec caddy caddy trust
+#   nebo stáhni /data/caddy/pki/authorities/local/root.crt
 
-:80 {
+nexusys-kid.home.prod {
+    tls internal
     reverse_proxy web:8080
 }
 
-# Pokud máš lokální hostname (např. nexus.home) nebo doménu:
-#
-# nexus.home {
-#     tls internal
-#     reverse_proxy web:8080
-# }
+# HTTP → HTTPS redirect
+http://nexusys-kid.home.prod {
+    redir https://{host}{uri} permanent
+}
