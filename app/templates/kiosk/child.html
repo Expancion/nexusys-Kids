@@ -235,17 +235,10 @@ const TODAY_WD   = {{ today_wd }};  // 0=Mon, 6=Sun
 // ── Clock ───────────────────────────────────────────────────────────────────
 const clockEl = document.getElementById('clock');
 const dateEl  = document.getElementById('date');
-let _lastLockCheck = 0;
 function tick() {
   const now = new Date();
   clockEl.textContent = now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
   dateEl.textContent  = now.toLocaleDateString('cs-CZ', {weekday:'long', day:'numeric', month:'long'});
-  // Re-evaluate lock every 30s; countdown updates every second separately
-  if (now - _lastLockCheck > 29000) {
-    _lastLockCheck = now;
-    checkScheduleLock(now);
-  }
-  updateCountdown();
 }
 tick(); setInterval(tick, 1000);
 
@@ -422,11 +415,12 @@ function showToast(msg, isError = false) {
 }
 
 // ── Schedule lock + countdown ──────────────────────────────────────────────
-let _unlockAt = null;  // Date object for next unlock, or null if not locked
+let _unlockAt = null;
 
-function checkScheduleLock(now) {
-  const wd  = (now.getDay() + 6) % 7;  // 0=Mon
-  const hm  = now.getHours() * 60 + now.getMinutes();
+function checkScheduleLock() {
+  const now  = new Date();
+  const wd   = (now.getDay() + 6) % 7;  // 0=Mon
+  const hm   = now.getHours() * 60 + now.getMinutes();
   const overlay = document.getElementById('locked-overlay');
 
   for (const s of SCHEDULES) {
@@ -439,29 +433,35 @@ function checkScheduleLock(now) {
     if (locked) {
       document.getElementById('locked-msg').textContent = s.message;
       overlay.style.display = 'flex';
-      // Compute unlock Date
-      const unlock = new Date(now);
+      const unlock = new Date();
       unlock.setHours(th, tm, 0, 0);
-      if (unlock <= now) unlock.setDate(unlock.getDate() + 1);
+      if (unlock.getTime() <= now.getTime()) unlock.setDate(unlock.getDate() + 1);
       _unlockAt = unlock;
       return;
     }
   }
-  // Not locked
   overlay.style.display = 'none';
   _unlockAt = null;
 }
 
 function updateCountdown() {
+  if (!_unlockAt) return;
   const el = document.getElementById('locked-countdown');
-  if (!_unlockAt || !el) return;
-  const diff = Math.max(0, Math.floor((_unlockAt - Date.now()) / 1000));
+  if (!el) return;
+  const diff = Math.max(0, Math.floor((_unlockAt.getTime() - Date.now()) / 1000));
   const h = Math.floor(diff / 3600);
   const m = Math.floor((diff % 3600) / 60);
   const s = diff % 60;
   el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  if (diff === 0) checkScheduleLock(new Date());  // Re-check when countdown hits zero
+  if (diff === 0) checkScheduleLock();
 }
+
+// Run immediately on load, then re-check every 30s
+checkScheduleLock();
+setInterval(checkScheduleLock, 30000);
+
+// Countdown ticks independently every second
+setInterval(updateCountdown, 1000);
 
 // Initial calendar summary on home
 buildCalendar();
