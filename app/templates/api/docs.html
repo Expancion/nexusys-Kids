@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nexus Junior — API Reference</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; }
+    pre { tab-size: 2; }
+    .method-get    { background: #14532d; color: #86efac; }
+    .method-post   { background: #1e3a5f; color: #93c5fd; }
+    .badge-req     { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed44; }
+    .badge-opt     { background: #37415122; color: #9ca3af; border: 1px solid #37415144; }
+    .badge-locked  { background: #dc262622; color: #fca5a5; border: 1px solid #dc262644; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  <!-- Header -->
+  <div class="border-b border-slate-800 bg-slate-900 px-6 py-5">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">🔌</span>
+          <h1 class="text-xl font-black text-white">Nexus Junior API</h1>
+          <span class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">v1</span>
+        </div>
+        <p class="mt-1 text-sm text-slate-400">Base URL: <code class="text-indigo-400">/api</code> &nbsp;·&nbsp; All responses: <code class="text-indigo-400">application/json</code> &nbsp;·&nbsp; No auth required on device endpoints</p>
+      </div>
+      <a href="/admin/children" class="text-sm text-slate-500 hover:text-slate-300 transition">← Admin</a>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-6 py-8 space-y-10">
+
+    <!-- Quick reference -->
+    <section>
+      <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Quick Reference</h2>
+      <div class="rounded-xl border border-slate-800 overflow-hidden text-sm font-mono">
+        {% set endpoints = [
+          ("GET",  "/api/",                              "This page"),
+          ("GET",  "/api/health",                        "Health check"),
+          ("GET",  "/api/device-policy?deviceId=KEY",    "Check device access + get child info"),
+          ("POST", "/api/kiosk/watch",                   "Record video watch, deduct points"),
+          ("POST", "/api/kiosk/chore/complete",          "Complete chore, award points"),
+        ] %}
+        {% for method, path, desc in endpoints %}
+        <div class="flex items-center gap-4 px-4 py-2.5 border-b border-slate-800 last:border-0 hover:bg-slate-900/50">
+          <span class="shrink-0 text-xs font-bold px-2 py-0.5 rounded {{ 'method-get' if method == 'GET' else 'method-post' }}">{{ method }}</span>
+          <span class="text-slate-300 min-w-0 flex-1">{{ path }}</span>
+          <span class="text-slate-500 hidden sm:block">{{ desc }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- ── Live profiles ─────────────────────────────────────────────── -->
+    <section>
+      <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Zaregistrované profily a zařízení</h2>
+      {% if children %}
+      <div class="space-y-3">
+        {% for child in children %}
+        <div class="rounded-xl border border-slate-800 overflow-hidden">
+          <!-- Child header -->
+          <div class="flex items-center gap-3 px-4 py-3 bg-slate-900 border-b border-slate-800">
+            <span class="text-2xl">{{ child.avatar_icon }}</span>
+            <div class="flex-1">
+              <span class="font-bold text-white">{{ child.name }}</span>
+              <span class="ml-2 text-xs text-slate-500">child_id = <code class="text-indigo-400">{{ child.id }}</code></span>
+            </div>
+            <div class="text-xs text-slate-500">
+              {{ child.points }} bodů &nbsp;·&nbsp; video cost {{ child.video_cost }} b
+            </div>
+            <a href="/admin/children/{{ child.id }}"
+               class="text-xs text-slate-500 hover:text-slate-300 transition">upravit →</a>
+          </div>
+          <!-- Devices -->
+          {% set devs = child.devices.all() %}
+          {% if devs %}
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800 text-xs text-slate-500">
+                <th class="px-4 py-2 text-left font-bold">Zařízení</th>
+                <th class="px-4 py-2 text-left font-bold">device_key</th>
+                <th class="px-4 py-2 text-left font-bold">Stav</th>
+                <th class="px-4 py-2 text-left font-bold">Kiosk URL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for dev in devs %}
+              <tr class="border-b border-slate-800 last:border-0 hover:bg-slate-900/40">
+                <td class="px-4 py-2.5 text-slate-300">{{ dev.name }}</td>
+                <td class="px-4 py-2.5">
+                  <code class="text-yellow-400 select-all">{{ dev.device_key }}</code>
+                </td>
+                <td class="px-4 py-2.5">
+                  {% if dev.allowed %}
+                  <span class="text-xs px-2 py-0.5 rounded bg-green-900/40 text-green-400 border border-green-800">povoleno</span>
+                  {% else %}
+                  <span class="text-xs px-2 py-0.5 rounded bg-red-900/40 text-red-400 border border-red-800">blokováno</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-2.5">
+                  <a href="/kiosk/{{ child.id }}" class="text-indigo-400 hover:text-indigo-300 transition font-mono text-xs">/kiosk/{{ child.id }}</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="px-4 py-3 text-sm text-slate-500 italic">
+            Žádná zařízení — <a href="/admin/children/{{ child.id }}/devices/new" class="text-indigo-400 hover:text-indigo-300 transition">přidat zařízení →</a>
+          </p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="rounded-xl border border-dashed border-slate-700 px-6 py-8 text-center text-slate-500">
+        <p class="text-4xl mb-3">👶</p>
+        <p class="font-bold">Zatím žádné profily.</p>
+        <a href="/admin/children/new" class="text-indigo-400 hover:text-indigo-300 transition text-sm">Přidat dítě →</a>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- ── GET /api/health ─────────────────────────────────────────── -->
+    <section id="health">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-xs font-bold px-2.5 py-1 rounded method-get">GET</span>
+        <code class="text-lg font-mono text-white">/api/health</code>
+      </div>
+      <p class="text-slate-400 text-sm mb-4">Liveness probe. Returns 200 when the app is up.</p>
+      <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+        <p class="text-xs font-bold text-slate-500 mb-2">RESPONSE 200</p>
+        <pre class="text-sm text-green-400">{"status": "ok", "service": "nexus-junior"}</pre>
+      </div>
+      <div class="mt-3 rounded-xl bg-slate-900/50 border border-slate-800 p-4">
+        <p class="text-xs font-bold text-slate-500 mb-2">NIXOS USAGE</p>
+        <pre class="text-sm text-slate-300">curl -fs https://nexusys-kid.home.prod/api/health | jq .status</pre>
+      </div>
+    </section>
+
+    <!-- ── GET /api/device-policy ──────────────────────────────────── -->
+    <section id="device-policy">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-xs font-bold px-2.5 py-1 rounded method-get">GET</span>
+        <code class="text-lg font-mono text-white">/api/device-policy</code>
+      </div>
+      <p class="text-slate-400 text-sm mb-4">
+        Main gate for the NixOS kiosk agent. Checks whether a device is allowed to run and
+        returns child data needed to open the kiosk. Also incorporates time-based schedule locks —
+        if a <code class="text-indigo-400">ChildSchedule</code> lock is active the response is
+        <code class="text-indigo-400">allowed: false</code> even if the device itself is enabled.
+      </p>
+
+      <!-- Params -->
+      <div class="rounded-xl border border-slate-800 overflow-hidden text-sm mb-4">
+        <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs font-bold text-slate-500">QUERY PARAMETERS</div>
+        <div class="px-4 py-3 flex items-start gap-4">
+          <code class="text-indigo-400 shrink-0">deviceId</code>
+          <span class="badge-req text-xs px-1.5 py-0.5 rounded shrink-0">required</span>
+          <span class="text-slate-400">The unique device key registered in Admin → Child → Devices. E.g. <code class="text-slate-300">nixos-kuba-01</code></span>
+        </div>
+      </div>
+
+      <!-- Responses -->
+      <div class="space-y-3">
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-green-500 mb-2">RESPONSE 200 — allowed</p>
+          <pre class="text-sm text-slate-300">{
+  "allowed": true,
+  "childId": 1,
+  "childName": "Kuba",
+  "points": 42,
+  "videoCost": 10,
+  "maxVideos": 4,
+  "dailyLimit": 5,
+  "message": "Máš 42 bodů (4 videí).",
+  "kioskUrl": "/kiosk/1"
+}</pre>
+        </div>
+
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-red-400 mb-2">RESPONSE 200 — blocked by admin</p>
+          <pre class="text-sm text-slate-300">{
+  "allowed": false,
+  "childName": "Kuba",
+  "message": "Kiosek je teď nedostupný."
+}</pre>
+        </div>
+
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-red-400 mb-2">RESPONSE 200 — blocked by time schedule <span class="badge-locked text-xs px-1.5 py-0.5 rounded ml-1">schedule_locked</span></p>
+          <pre class="text-sm text-slate-300">{
+  "allowed": false,
+  "childName": "Kuba",
+  "message": "Kiosek je zamčený. Jdi spát! 🌙",
+  "schedule_locked": true
+}</pre>
+        </div>
+
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-yellow-400 mb-2">RESPONSE 404 — unknown device</p>
+          <pre class="text-sm text-slate-300">{"allowed": false, "message": "Zařízení nebylo nalezeno."}</pre>
+        </div>
+      </div>
+
+      <!-- NixOS usage -->
+      <div class="mt-4 rounded-xl bg-slate-900/50 border border-slate-800 p-4">
+        <p class="text-xs font-bold text-slate-500 mb-2">NIXOS AGENT PATTERN (bash)</p>
+        <pre class="text-sm text-slate-300">DEVICE_KEY="nixos-kuba-01"
+BASE="https://nexusys-kid.home.prod"
+
+policy=$(curl -sf "$BASE/api/device-policy?deviceId=$DEVICE_KEY")
+allowed=$(echo "$policy" | jq -r '.allowed')
+
+if [ "$allowed" = "true" ]; then
+  kiosk_url=$(echo "$policy" | jq -r '.kioskUrl')
+  # launch browser → $BASE$kiosk_url
+  chromium --kiosk "$BASE$kiosk_url"
+else
+  msg=$(echo "$policy" | jq -r '.message')
+  # show lock screen with $msg
+fi</pre>
+      </div>
+    </section>
+
+    <!-- ── POST /api/kiosk/watch ───────────────────────────────────── -->
+    <section id="kiosk-watch">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-xs font-bold px-2.5 py-1 rounded method-post">POST</span>
+        <code class="text-lg font-mono text-white">/api/kiosk/watch</code>
+      </div>
+      <p class="text-slate-400 text-sm mb-4">
+        Records that a child started watching a video and deducts the point cost.
+        Blocked server-side if a schedule lock is active — cannot be bypassed from the client.
+      </p>
+
+      <!-- Body -->
+      <div class="rounded-xl border border-slate-800 overflow-hidden text-sm mb-4">
+        <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs font-bold text-slate-500">REQUEST BODY (JSON)</div>
+        <table class="w-full">
+          <tbody>
+            <tr class="border-b border-slate-800">
+              <td class="px-4 py-2.5"><code class="text-indigo-400">child_id</code></td>
+              <td class="px-4 py-2.5"><span class="badge-req text-xs px-1.5 py-0.5 rounded">required</span></td>
+              <td class="px-4 py-2.5 text-slate-400">integer — from device-policy response</td>
+            </tr>
+            <tr class="border-b border-slate-800">
+              <td class="px-4 py-2.5"><code class="text-indigo-400">video_id</code></td>
+              <td class="px-4 py-2.5"><span class="badge-opt text-xs px-1.5 py-0.5 rounded">optional</span></td>
+              <td class="px-4 py-2.5 text-slate-400">integer — used for time-based price rules; if omitted uses child default cost</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2.5"><code class="text-indigo-400">device_key</code></td>
+              <td class="px-4 py-2.5"><span class="badge-opt text-xs px-1.5 py-0.5 rounded">optional</span></td>
+              <td class="px-4 py-2.5 text-slate-400">string — stored in WatchSession for audit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="space-y-3">
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-green-500 mb-2">RESPONSE 200 — ok</p>
+          <pre class="text-sm text-slate-300">{"ok": true, "new_balance": 32}</pre>
+        </div>
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-red-400 mb-2">RESPONSE 200 — not enough points</p>
+          <pre class="text-sm text-slate-300">{
+  "ok": false,
+  "reason": "not_enough_points",
+  "message": "Nemáš dost bodů. Vydělej si je splněním úkolů!",
+  "balance": 3
+}</pre>
+        </div>
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-red-400 mb-2">RESPONSE 403 — schedule locked <span class="badge-locked text-xs px-1.5 py-0.5 rounded ml-1">schedule_locked</span></p>
+          <pre class="text-sm text-slate-300">{
+  "ok": false,
+  "reason": "schedule_locked",
+  "message": "Kiosek je zamčený. Jdi spát! 🌙"
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── POST /api/kiosk/chore/complete ─────────────────────────── -->
+    <section id="chore-complete">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-xs font-bold px-2.5 py-1 rounded method-post">POST</span>
+        <code class="text-lg font-mono text-white">/api/kiosk/chore/complete</code>
+      </div>
+      <p class="text-slate-400 text-sm mb-4">
+        Marks a daily chore as done for today and awards points. Idempotent within the same day —
+        calling it twice returns <code class="text-indigo-400">already_done</code>.
+        Not blocked by schedule locks (physical chores can be completed at any time).
+      </p>
+
+      <!-- Body -->
+      <div class="rounded-xl border border-slate-800 overflow-hidden text-sm mb-4">
+        <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 text-xs font-bold text-slate-500">REQUEST BODY (JSON)</div>
+        <table class="w-full">
+          <tbody>
+            <tr class="border-b border-slate-800">
+              <td class="px-4 py-2.5"><code class="text-indigo-400">child_id</code></td>
+              <td class="px-4 py-2.5"><span class="badge-req text-xs px-1.5 py-0.5 rounded">required</span></td>
+              <td class="px-4 py-2.5 text-slate-400">integer</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2.5"><code class="text-indigo-400">chore_id</code></td>
+              <td class="px-4 py-2.5"><span class="badge-req text-xs px-1.5 py-0.5 rounded">required</span></td>
+              <td class="px-4 py-2.5 text-slate-400">integer — from kiosk page chores data</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="space-y-3">
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-green-500 mb-2">RESPONSE 200 — ok</p>
+          <pre class="text-sm text-slate-300">{
+  "ok": true,
+  "awarded": 5,
+  "new_balance": 47,
+  "chore_name": "Uklidit pokoj"
+}</pre>
+        </div>
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-yellow-400 mb-2">RESPONSE 200 — already done today</p>
+          <pre class="text-sm text-slate-300">{
+  "ok": false,
+  "reason": "already_done",
+  "message": "Úkol 'Uklidit pokoj' jsi dnes už splnil! 🎉"
+}</pre>
+        </div>
+        <div class="rounded-xl bg-slate-900 border border-slate-800 p-4">
+          <p class="text-xs font-bold text-red-400 mb-2">RESPONSE 403 — wrong child</p>
+          <pre class="text-sm text-slate-300">{"ok": false, "reason": "not_your_chore"}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── NixOS full agent skeleton ──────────────────────────────── -->
+    <section id="nixos-agent">
+      <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">NixOS Kiosk Agent Skeleton</h2>
+      <div class="rounded-xl bg-slate-900 border border-slate-800 p-5">
+        <pre class="text-sm text-slate-300 overflow-x-auto">#!/usr/bin/env bash
+# /etc/nexus-junior/kiosk-agent.sh
+# Runs as a systemd service on the NixOS kiosk device.
+# Polls device-policy every 60 s; relaunches browser on change.
+
+set -euo pipefail
+
+BASE="https://nexusys-kid.home.prod"
+DEVICE_KEY="${NEXUS_DEVICE_KEY:-{{ first_device_key }}}"
+POLL_INTERVAL=60
+LOCK_MSG_FILE="/run/nexus-lock-msg"
+BROWSER_PID=""
+
+log() { echo "[nexus-agent] $*"; }
+
+kill_browser() {
+  [ -n "$BROWSER_PID" ] && kill "$BROWSER_PID" 2>/dev/null || true
+  BROWSER_PID=""
+}
+
+launch_kiosk() {
+  local url="$1"
+  kill_browser
+  # adjust binary for your DE (chromium / firefox / cage + surf …)
+  chromium \
+    --kiosk \
+    --no-first-run \
+    --disable-infobars \
+    --noerrdialogs \
+    "$url" &amp;
+  BROWSER_PID=$!
+  log "Launched kiosk → $url (pid $BROWSER_PID)"
+}
+
+show_lock_screen() {
+  local msg="$1"
+  echo "$msg" &gt; "$LOCK_MSG_FILE"
+  kill_browser
+  # swap in your lock-screen binary / cage app here
+  log "Lock screen: $msg"
+}
+
+check_policy() {
+  local policy allowed kiosk_url msg
+
+  policy=$(curl -sf --max-time 5 \
+    "$BASE/api/device-policy?deviceId=$DEVICE_KEY") || {
+    log "Policy check failed (network?), keeping current state."
+    return
+  }
+
+  allowed=$(echo "$policy" | jq -r '.allowed')
+
+  if [ "$allowed" = "true" ]; then
+    kiosk_url=$(echo "$policy" | jq -r '.kioskUrl')
+    # only relaunch if not already showing the right URL
+    launch_kiosk "$BASE$kiosk_url"
+  else
+    msg=$(echo "$policy" | jq -r '.message')
+    show_lock_screen "$msg"
+  fi
+}
+
+# ── main loop ────────────────────────────────────────────────────
+log "Starting. device=$DEVICE_KEY  base=$BASE"
+check_policy
+while sleep "$POLL_INTERVAL"; do
+  check_policy
+done</pre>
+      </div>
+
+      <div class="mt-4 rounded-xl bg-slate-900/50 border border-slate-800 p-4 text-sm text-slate-400 space-y-2">
+        <p><span class="text-slate-300 font-bold">systemd unit</span> — add <code class="text-indigo-400">Environment=NEXUS_DEVICE_KEY=nixos-kuba-01</code> in the <code class="text-indigo-400">[Service]</code> block.</p>
+        <p><span class="text-slate-300 font-bold">TLS cert</span> — trust <code class="text-indigo-400">./certs/caddy-root-ca.crt</code> (exported by Caddy on build). Copy to <code class="text-indigo-400">/etc/ssl/certs/</code> and run <code class="text-indigo-400">update-ca-certificates</code>.</p>
+        <p><span class="text-slate-300 font-bold">Schedule locking</span> — handled server-side. The agent doesn't need to know about lock windows; <code class="text-indigo-400">device-policy</code> returns <code class="text-indigo-400">allowed: false</code> automatically when a time lock is active.</p>
+      </div>
+    </section>
+
+    <div class="border-t border-slate-800 pt-6 text-xs text-slate-600 text-center">
+      Nexus Junior · homeSystem · <a href="/admin/" class="hover:text-slate-400 transition">Admin panel</a>
+    </div>
+
+  </div>
+</body>
+</html>

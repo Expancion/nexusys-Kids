@@ -1,6 +1,6 @@
 from datetime import date as date_cls, datetime as dt_cls
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, render_template, request
 from sqlalchemy import or_
 
 from ...extensions import db
@@ -9,6 +9,18 @@ from ...models import (Child, ChildSchedule, ChoreCompletion, DailyChore,
                        WatchSession)
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
+
+
+@api_bp.get("/")
+def api_docs():
+    children = Child.query.order_by(Child.name).all()
+    first_key = "nixos-kuba-01"
+    for child in children:
+        dev = child.devices.first()
+        if dev:
+            first_key = dev.device_key
+            break
+    return render_template("api/docs.html", children=children, first_device_key=first_key)
 
 
 @api_bp.get("/health")
