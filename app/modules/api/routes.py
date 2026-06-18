@@ -1,10 +1,12 @@
 from datetime import date as date_cls, datetime as dt_cls
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy import or_
 
 from ...extensions import db
-from ...models import (Child, ChoreCompletion, DailyChore, Device, KioskVideo,
-                       PointTransaction, VideoPriceRule, WatchSession)
+from ...models import (Child, ChildSchedule, ChoreCompletion, DailyChore,
+                       Device, KioskVideo, PointTransaction, VideoPriceRule,
+                       WatchSession)
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -29,6 +31,15 @@ def device_policy():
     if not device.allowed:
         msg = device.locked_message or "Přístup je dočasně zablokován."
         return jsonify({"allowed": False, "childName": child.name, "message": msg})
+
+    locked, lock_msg = _is_schedule_locked(child.id)
+    if locked:
+        return jsonify({
+            "allowed": False,
+            "childName": child.name,
+            "message": lock_msg or "Kiosek je teď zamčený.",
+            "schedule_locked": True,
+        })
 
     max_videos = child.points // child.video_cost if child.video_cost > 0 else 0
 
@@ -56,6 +67,15 @@ def kiosk_watch():
         return jsonify({"ok": False, "reason": "missing_child_id"}), 400
 
     child = db.get_or_404(Child, child_id)
+
+    locked, lock_msg = _is_schedule_locked(child_id)
+    if locked:
+        return jsonify({
+            "ok": False,
+            "reason": "schedule_locked",
+            "message": lock_msg or "Kiosek je teď zamčený.",
+        }), 403
+
     cost = _resolve_video_cost(video_id, child.video_cost)
 
     if child.points < cost:
@@ -111,6 +131,30 @@ def kiosk_chore_complete():
 
     return jsonify({"ok": True, "awarded": chore.points_reward,
                     "new_balance": child.points, "chore_name": chore.chore_name})
+
+
+def _is_schedule_locked(child_id: int) -> tuple[bool, str | None]:
+    """Return (is_locked, message). Checks all ChildSchedule rows for child."""
+    now = dt_cls.now()
+    today_wd = now.weekday()  # 0=Mon, 6=Sun
+    now_t = now.time()
+
+    schedules = ChildSchedule.query.filter(
+        ChildSchedule.child_id == child_id,
+        or_(ChildSchedule.weekday.is_(None), ChildSchedule.weekday == today_wd)
+    ).all()
+
+    for s in schedules:
+        t_from, t_to = s.locked_from, s.locked_to
+        if t_from <= t_to:
+            in_window = t_from <= now_t <= t_to
+        else:
+            # spans midnight
+            in_window = now_t >= t_from or now_t <= t_to
+        if in_window:
+            return True, s.message
+
+    return False, None
 
 
 def _resolve_video_cost(video_id, default_cost: int) -> int:
