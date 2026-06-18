@@ -6,6 +6,11 @@ from ...models import Child, Device, KioskVideo, PointTransaction, WatchSession
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 
+@api_bp.get("/health")
+def health():
+    return {"status": "ok", "service": "nexus-junior"}
+
+
 @api_bp.get("/device-policy")
 def device_policy():
     device_key = request.args.get("deviceId", "").strip()
