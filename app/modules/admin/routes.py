@@ -251,7 +251,8 @@ def video_delete(vid_id):
 @admin_required
 def children():
     kids = Child.query.order_by(Child.name).all()
-    return render_template("admin/children.html", children=kids)
+    task_count = RewardTask.query.filter_by(active=True).count()
+    return render_template("admin/children.html", children=kids, task_count=task_count)
 
 
 @admin_bp.route("/children/new", methods=["GET", "POST"])

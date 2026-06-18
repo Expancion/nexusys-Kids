@@ -22,6 +22,26 @@
       </a>
     </div>
 
+    {% if task_count > 0 %}
+    <a href="/admin/tasks"
+       class="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5
+              px-5 py-3 text-sm text-emerald-400 hover:bg-emerald-500/10 transition group">
+      <span class="text-lg select-none">⭐</span>
+      <span>
+        <span class="font-bold">{{ task_count }} aktivní {{ 'úkol' if task_count == 1 else ('úkoly' if task_count < 5 else 'úkolů') }}</span>
+        k odměňování
+      </span>
+      <span class="ml-auto text-emerald-600 group-hover:text-emerald-400 transition">→</span>
+    </a>
+    {% else %}
+    <a href="/admin/tasks/new"
+       class="flex items-center gap-3 rounded-2xl border border-dashed border-slate-700
+              px-5 py-3 text-sm text-slate-500 hover:text-slate-400 hover:border-slate-600 transition group">
+      <span class="text-lg select-none">📋</span>
+      <span>Zatím žádné úkoly — <span class="text-indigo-400 group-hover:text-indigo-300">přidej první úkol</span> pro rychlé odměňování dětí</span>
+    </a>
+    {% endif %}
+
     {% if children %}
     <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
       {% for child in children %}
