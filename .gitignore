@@ -18,6 +18,9 @@ storage/
 .DS_Store
 Thumbs.db
 
+# Caddy exported root CA (distribute manually to devices)
+certs/
+
 # Editor
 .vscode/
 .idea/

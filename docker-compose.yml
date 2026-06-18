@@ -44,7 +44,9 @@ services:
     restart: unless-stopped
 
   caddy:
-    image: caddy:2-alpine
+    build:
+      context: ./caddy
+      dockerfile: Dockerfile
     ports:
       - "80:80"
       - "443:443"
@@ -52,6 +54,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+      - ./certs:/certs
     depends_on:
       - web
     restart: unless-stopped
