@@ -38,14 +38,15 @@
 
 <!-- No-points overlay -->
 <div id="no-points-overlay"
-     class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center
+     style="display:none;"
+     class="fixed inset-0 z-50 flex flex-col items-center justify-center
             bg-slate-950/95 backdrop-blur-sm px-8">
   <div class="text-8xl mb-6 select-none">🔒</div>
   <h2 class="text-3xl font-black text-white mb-3 text-center">Nemáš dost bodů!</h2>
   <p id="no-points-msg" class="text-white/60 text-center max-w-sm mb-8 text-lg">
     Vydělej si body splněním úkolů.
   </p>
-  <button onclick="document.getElementById('no-points-overlay').classList.add('hidden')"
+  <button onclick="document.getElementById('no-points-overlay').style.display='none'"
           class="rounded-2xl bg-slate-800 hover:bg-slate-700 px-10 py-4 text-xl
                  font-black text-white transition active:scale-95">
     OK
@@ -54,13 +55,24 @@
 
 <!-- Locked overlay (time-based schedule) -->
 <div id="locked-overlay"
-     class="{{ '' if locked_msg else 'hidden' }} fixed inset-0 z-50 flex flex-col items-center
-            justify-center bg-slate-950/97 backdrop-blur-sm px-8">
-  <div class="text-8xl mb-6 select-none">🌙</div>
-  <h2 class="text-3xl font-black text-white mb-3 text-center">Kiosek je zamčený</h2>
-  <p id="locked-msg" class="text-white/60 text-center max-w-sm text-lg">
-    {{ locked_msg or '' }}
-  </p>
+     style="{{ '' if locked_msg else 'display:none;' }}"
+     class="fixed inset-0 z-50 flex flex-col items-center justify-center
+            bg-slate-950 px-8">
+  <div class="text-center">
+    <div class="text-8xl mb-4 select-none" style="animation: pulse 2s ease-in-out infinite;">🌙</div>
+    <h2 class="text-3xl font-black text-white mb-2">Kiosek je zamčený</h2>
+    <p id="locked-msg" class="text-white/50 text-lg mb-8 max-w-xs mx-auto">
+      {{ locked_msg or '' }}
+    </p>
+    <div class="inline-flex flex-col items-center gap-1 rounded-3xl
+                bg-white/5 border border-white/10 px-10 py-5">
+      <div id="locked-countdown"
+           class="text-6xl font-black text-yellow-400 tabular-nums tracking-tight leading-none">
+        --:--:--
+      </div>
+      <div class="text-sm text-white/30 font-bold mt-1">do odemčení</div>
+    </div>
+  </div>
 </div>
 
 <!-- Chore toast -->
@@ -78,7 +90,8 @@
       <!-- Back button (hidden on home) -->
       <button id="back-btn"
               onclick="showSection('home')"
-              class="hidden w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 items-center
+              style="display:none;"
+              class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center
                      justify-center text-white text-xl transition active:scale-95 shrink-0">
         ←
       </button>
@@ -222,13 +235,19 @@ const TODAY_WD   = {{ today_wd }};  // 0=Mon, 6=Sun
 // ── Clock ───────────────────────────────────────────────────────────────────
 const clockEl = document.getElementById('clock');
 const dateEl  = document.getElementById('date');
+let _lastLockCheck = 0;
 function tick() {
   const now = new Date();
   clockEl.textContent = now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
   dateEl.textContent  = now.toLocaleDateString('cs-CZ', {weekday:'long', day:'numeric', month:'long'});
-  checkScheduleLock(now);
+  // Re-evaluate lock every 30s; countdown updates every second separately
+  if (now - _lastLockCheck > 29000) {
+    _lastLockCheck = now;
+    checkScheduleLock(now);
+  }
+  updateCountdown();
 }
-tick(); setInterval(tick, 30000);
+tick(); setInterval(tick, 1000);
 
 // ── Stars ───────────────────────────────────────────────────────────────────
 const se = document.getElementById('stars');
@@ -249,8 +268,7 @@ const SUBTITLES = {
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('section-' + id).classList.add('active');
-  document.getElementById('back-btn').classList.toggle('hidden', id === 'home');
-  document.getElementById('back-btn').classList.toggle('flex', id !== 'home');
+  document.getElementById('back-btn').style.display = id === 'home' ? 'none' : 'flex';
   document.getElementById('section-subtitle').textContent = SUBTITLES[id] || '';
   if (id === 'chores') buildCalendar();
 }
@@ -279,7 +297,7 @@ async function watchVideo(childId, videoId, embedUrl, title) {
     } else {
       document.getElementById('no-points-msg').textContent =
         data.message || 'Nemáš dost bodů!';
-      document.getElementById('no-points-overlay').classList.remove('hidden');
+      document.getElementById('no-points-overlay').style.display = 'flex';
     }
   } catch {
     openTile(embedUrl, title);
@@ -403,10 +421,13 @@ function showToast(msg, isError = false) {
   setTimeout(() => el.classList.add('hidden'), 3000);
 }
 
-// ── Schedule lock ───────────────────────────────────────────────────────────
+// ── Schedule lock + countdown ──────────────────────────────────────────────
+let _unlockAt = null;  // Date object for next unlock, or null if not locked
+
 function checkScheduleLock(now) {
-  const wd = (now.getDay() + 6) % 7;  // 0=Mon
-  const hm = now.getHours() * 60 + now.getMinutes();
+  const wd  = (now.getDay() + 6) % 7;  // 0=Mon
+  const hm  = now.getHours() * 60 + now.getMinutes();
+  const overlay = document.getElementById('locked-overlay');
 
   for (const s of SCHEDULES) {
     if (s.weekday !== null && s.weekday !== wd) continue;
@@ -417,12 +438,29 @@ function checkScheduleLock(now) {
     const locked = from <= to ? (hm >= from && hm <= to) : (hm >= from || hm <= to);
     if (locked) {
       document.getElementById('locked-msg').textContent = s.message;
-      document.getElementById('locked-overlay').classList.remove('hidden');
+      overlay.style.display = 'flex';
+      // Compute unlock Date
+      const unlock = new Date(now);
+      unlock.setHours(th, tm, 0, 0);
+      if (unlock <= now) unlock.setDate(unlock.getDate() + 1);
+      _unlockAt = unlock;
       return;
     }
   }
-  // Not locked — hide overlay if it was shown by server
-  // (only hides clock-triggered re-checks, not the initial server-side lock)
+  // Not locked
+  overlay.style.display = 'none';
+  _unlockAt = null;
+}
+
+function updateCountdown() {
+  const el = document.getElementById('locked-countdown');
+  if (!_unlockAt || !el) return;
+  const diff = Math.max(0, Math.floor((_unlockAt - Date.now()) / 1000));
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  const s = diff % 60;
+  el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if (diff === 0) checkScheduleLock(new Date());  // Re-check when countdown hits zero
 }
 
 // Initial calendar summary on home
