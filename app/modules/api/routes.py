@@ -109,6 +109,57 @@ def kiosk_watch():
     return jsonify({"ok": True, "new_balance": child.points})
 
 
+@api_bp.get("/child/<int:child_id>/balance")
+def child_balance(child_id):
+    child = db.get_or_404(Child, child_id)
+    return jsonify({"points": child.points, "name": child.name})
+
+
+@api_bp.post("/game/start")
+def game_start():
+    data  = request.get_json(silent=True) or {}
+    child_id = data.get("child_id")
+    cost     = int(data.get("cost", 0))
+    if not child_id or cost <= 0:
+        return jsonify({"ok": True, "cost": 0})
+    child = db.get_or_404(Child, child_id)
+    if child.points < cost:
+        return jsonify({"ok": False, "reason": "not_enough_points",
+                        "balance": child.points, "cost": cost})
+    child.points -= cost
+    db.session.add(PointTransaction(
+        child_id=child.id, delta=-cost,
+        reason="Hra: vstup do úrovně", actor="game"
+    ))
+    db.session.commit()
+    return jsonify({"ok": True, "cost": cost, "new_balance": child.points})
+
+
+@api_bp.post("/game/reward")
+def game_reward():
+    data       = request.get_json(silent=True) or {}
+    child_id   = data.get("child_id")
+    correct    = int(data.get("correct", 0))
+    wrong      = int(data.get("wrong", 0))
+    max_reward = int(data.get("max_reward", 0))
+    label      = data.get("label", "Hra")
+    if not child_id:
+        return jsonify({"ok": True, "awarded": 0, "accuracy": 0})
+    child    = db.get_or_404(Child, child_id)
+    total    = correct + wrong
+    accuracy = correct / total if total > 0 else 0
+    awarded  = round(max_reward * accuracy)
+    if awarded > 0:
+        child.points += awarded
+        db.session.add(PointTransaction(
+            child_id=child.id, delta=awarded,
+            reason=f"Hra: {label}", actor="game"
+        ))
+        db.session.commit()
+    return jsonify({"ok": True, "awarded": awarded,
+                    "new_balance": child.points, "accuracy": round(accuracy * 100)})
+
+
 @api_bp.post("/kiosk/chore/complete")
 def kiosk_chore_complete():
     data = request.get_json(silent=True) or {}

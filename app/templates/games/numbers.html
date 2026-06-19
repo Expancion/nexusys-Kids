@@ -27,10 +27,8 @@
     #letter-display.scale-down { transform: scale(0.87) rotate(2deg); }
 
     #answer-track span {
+      display: inline-block; min-width:.6em; text-align:center;
       transition: color .15s ease;
-      display: inline-block;
-      min-width: .6em;
-      text-align: center;
     }
 
     .lvl-dot {
@@ -42,10 +40,7 @@
     .lvl-dot.current { background:rgba(255,255,255,.8); transform:scale(1.4);
                        box-shadow:0 0 8px rgba(255,255,255,.5); }
 
-    #feedback {
-      transition: opacity .3s ease, transform .3s ease;
-      transform: translateY(0);
-    }
+    #feedback { transition: opacity .3s ease, transform .3s ease; }
     #feedback.hide { opacity:0; transform:translateY(4px); }
 
     @keyframes levelUp {
@@ -65,10 +60,38 @@
       outline: none;
     }
     .sel-card:active { transform:scale(.97); }
+
+    #reward-toast {
+      position:fixed; bottom:2rem; left:50%; transform:translateX(-50%);
+      z-index:60; border-radius:1.25rem;
+      background:linear-gradient(135deg,#f59e0b,#d97706);
+      padding:.75rem 1.75rem; font-weight:900; font-size:1.25rem;
+      color:white; box-shadow:0 8px 32px rgba(0,0,0,.5);
+      transition: opacity .4s ease, transform .4s ease;
+      pointer-events:none;
+    }
+    #reward-toast.hide { opacity:0; transform:translateX(-50%) translateY(12px); }
   </style>
 </head>
 <body class="min-h-screen text-white overflow-hidden">
   <div class="stars" id="stars"></div>
+
+  <!-- Not enough stars overlay -->
+  <div id="no-stars-overlay"
+       class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-sm">
+    <div class="text-center rounded-3xl bg-slate-900 border border-slate-700 p-8 max-w-sm mx-4">
+      <div class="text-6xl mb-4">💔</div>
+      <h2 class="text-2xl font-black mb-2">Nemáš dost hvězd!</h2>
+      <p id="no-stars-msg" class="text-white/60 mb-6 text-lg"></p>
+      <button onclick="document.getElementById('no-stars-overlay').classList.add('hidden')"
+              class="rounded-2xl bg-slate-700 hover:bg-slate-600 px-8 py-3 font-black text-white transition">
+        OK
+      </button>
+    </div>
+  </div>
+
+  <!-- Reward toast -->
+  <div id="reward-toast" class="hide"></div>
 
   <!-- ══════════ SELECTION SCREEN ══════════ -->
   <div id="sel-screen" class="relative z-10 flex flex-col h-screen">
@@ -83,7 +106,11 @@
         <div class="text-2xl font-black">🔢 Čísla</div>
         <div class="text-sm text-white/40 font-bold mt-0.5">Vyber co chceš trénovat</div>
       </div>
-      <div class="min-w-[6rem]"></div>
+      <div class="text-right min-w-[6rem]">
+        <div id="sel-balance" class="hidden font-black text-yellow-400 text-lg">
+          ⭐ <span id="sel-balance-val">0</span>
+        </div>
+      </div>
     </header>
 
     <main id="sel-main" class="flex-1 overflow-y-auto px-6 pb-4 pt-3">
@@ -109,7 +136,10 @@
       </div>
       <div class="text-right min-w-[4rem]">
         <div id="score-display" class="text-3xl font-black tabular-nums">0</div>
-        <div class="text-xs text-white/40 font-bold">bodů</div>
+        <div id="game-balance" class="hidden text-sm font-bold text-yellow-400 tabular-nums">
+          ⭐ <span id="game-balance-val">0</span>
+        </div>
+        <div class="text-xs text-white/40 font-bold">skóre</div>
       </div>
     </header>
 
@@ -150,36 +180,41 @@
 
   <script>
     // ── Helpers ───────────────────────────────────────────────────────
-    function rng(a, b) { return Array.from({length: b-a+1}, (_,i) => a+i); }
-    function rc(arr)   { return arr[Math.floor(Math.random() * arr.length)]; }
+    function rng(a,b) { return Array.from({length:b-a+1},(_,i)=>a+i); }
+    function rc(arr)  { return arr[Math.floor(Math.random()*arr.length)]; }
 
     function mkNum(arr) {
-      return () => { const n = rc(arr); return { d: String(n), a: String(n) }; };
+      return () => { const n=rc(arr); return {d:String(n), a:String(n)}; };
     }
     function mkAdd(minSum, maxSum) {
       return () => {
-        const sum  = minSum + Math.floor(Math.random() * (maxSum - minSum + 1));
-        const left = 1 + Math.floor(Math.random() * (sum - 1));
-        return { d: `${left}+${sum-left}`, a: String(sum) };
+        const sum  = minSum + Math.floor(Math.random()*(maxSum-minSum+1));
+        const left = 1 + Math.floor(Math.random()*(sum-1));
+        return {d:`${left}+${sum-left}`, a:String(sum)};
       };
     }
 
     // ── Level definitions ─────────────────────────────────────────────
     const LEVELS = [
-      { id:1, generate:mkNum([1,2,3,4,5]),    target:10, label:'1–5',     desc:'Začátečník',  preview:'1  2  3  4  5',  color:['rgba(245,158,11,.18)','rgba(245,158,11,.4)','#f59e0b'] },
-      { id:2, generate:mkNum(rng(1,9)),        target:15, label:'1–9',     desc:'Číslice',     preview:'1  2  …  9',     color:['rgba(249,115,22,.18)','rgba(249,115,22,.4)','#f97316'] },
-      { id:3, generate:mkNum(rng(0,9)),        target:15, label:'0–9',     desc:'S nulou',     preview:'0  1  …  9',     color:['rgba(239,68,68,.18)','rgba(239,68,68,.4)','#ef4444']   },
-      { id:4, generate:mkNum(rng(10,19)),      target:15, label:'10–19',   desc:'Dvouciferná', preview:'10  11  …  19',  color:['rgba(139,92,246,.18)','rgba(139,92,246,.4)','#8b5cf6'] },
-      { id:5, generate:mkNum(rng(10,99)),      target:20, label:'10–99',   desc:'Velká čísla', preview:'10  …  99',      color:['rgba(6,182,212,.18)','rgba(6,182,212,.4)','#06b6d4']   },
-      { id:6, generate:mkAdd(2,9),             target:15, label:'Sčítání', desc:'a+b=?',       preview:'2+3  4+1',       color:['rgba(16,185,129,.18)','rgba(16,185,129,.4)','#10b981'] },
-      { id:7, generate:mkAdd(10,18),           target:20, label:'Výpočty', desc:'Větší součty', preview:'7+8  9+6',      color:['rgba(14,165,233,.18)','rgba(14,165,233,.4)','#0ea5e9'] },
+      { id:1, generate:mkNum([1,2,3,4,5]),   target:10, label:'1–5',     desc:'Začátečník',  cost:2,  maxReward:5,  preview:'1  2  3  4  5',  color:['rgba(245,158,11,.18)','rgba(245,158,11,.4)','#f59e0b'] },
+      { id:2, generate:mkNum(rng(1,9)),       target:15, label:'1–9',     desc:'Číslice',     cost:3,  maxReward:8,  preview:'1  2  …  9',     color:['rgba(249,115,22,.18)','rgba(249,115,22,.4)','#f97316'] },
+      { id:3, generate:mkNum(rng(0,9)),       target:15, label:'0–9',     desc:'S nulou',     cost:3,  maxReward:8,  preview:'0  1  …  9',     color:['rgba(239,68,68,.18)','rgba(239,68,68,.4)','#ef4444']   },
+      { id:4, generate:mkNum(rng(10,19)),     target:15, label:'10–19',   desc:'Dvouciferná', cost:4,  maxReward:10, preview:'10  11  …  19',  color:['rgba(139,92,246,.18)','rgba(139,92,246,.4)','#8b5cf6'] },
+      { id:5, generate:mkNum(rng(10,99)),     target:20, label:'10–99',   desc:'Velká čísla', cost:6,  maxReward:16, preview:'10  …  99',      color:['rgba(6,182,212,.18)','rgba(6,182,212,.4)','#06b6d4']   },
+      { id:6, generate:mkAdd(2,9),            target:15, label:'Sčítání', desc:'a+b=?',       cost:5,  maxReward:13, preview:'2+3  4+1',       color:['rgba(16,185,129,.18)','rgba(16,185,129,.4)','#10b981'] },
+      { id:7, generate:mkAdd(10,18),          target:20, label:'Výpočty', desc:'Větší součty', cost:7, maxReward:20, preview:'7+8  9+6',       color:['rgba(14,165,233,.18)','rgba(14,165,233,.4)','#0ea5e9'] },
     ];
+
+    // ── Child context ─────────────────────────────────────────────────
+    const childId = new URLSearchParams(location.search).get('child_id');
+    let balance   = 0;
 
     // ── State ─────────────────────────────────────────────────────────
     let mode          = 'all';
     let levelIdx      = 0;
     let score         = 0;
     let levelProgress = 0;
+    let levelWrong    = 0;
     let round         = 1;
     let currentDisplay= '';
     let currentAnswer = '';
@@ -202,47 +237,115 @@
     const nextLabel      = document.getElementById('next-label');
     const levelDots      = document.getElementById('level-dots');
     const roundIndicator = document.getElementById('round-indicator');
+    const rewardToast    = document.getElementById('reward-toast');
+
+    // ── Balance helpers ───────────────────────────────────────────────
+    function updateBalanceDisplay() {
+      if (!childId) return;
+      document.getElementById('sel-balance').classList.remove('hidden');
+      document.getElementById('sel-balance-val').textContent = balance;
+      document.getElementById('game-balance').classList.remove('hidden');
+      document.getElementById('game-balance-val').textContent = balance;
+    }
+
+    async function fetchBalance() {
+      if (!childId) return;
+      try {
+        const d = await fetch(`/api/child/${childId}/balance`).then(r=>r.json());
+        balance = d.points; updateBalanceDisplay();
+      } catch {}
+    }
+
+    async function deductCost(lvlIdx) {
+      if (!childId) return true;
+      const cost = LEVELS[lvlIdx].cost;
+      if (cost <= 0) return true;
+      try {
+        const d = await fetch('/api/game/start', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({child_id:+childId, cost})
+        }).then(r=>r.json());
+        if (!d.ok) {
+          document.getElementById('no-stars-msg').textContent =
+            `Potřebuješ ${d.cost}⭐, ale máš jen ${d.balance}⭐. Splň nejdřív úkoly!`;
+          document.getElementById('no-stars-overlay').classList.remove('hidden');
+          return false;
+        }
+        balance = d.new_balance; updateBalanceDisplay(); return true;
+      } catch { return true; }
+    }
+
+    async function awardPoints(correct, wrong, lvlIdx) {
+      if (!childId) return;
+      const lvl = LEVELS[lvlIdx];
+      if (lvl.maxReward <= 0) return;
+      try {
+        const d = await fetch('/api/game/reward', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({child_id:+childId, correct, wrong,
+                                max_reward:lvl.maxReward, label:lvl.label})
+        }).then(r=>r.json());
+        if (d.ok) { balance = d.new_balance; updateBalanceDisplay(); showRewardToast(d.awarded, d.accuracy); }
+      } catch {}
+    }
+
+    let rewardTimer = null;
+    function showRewardToast(awarded, accuracy) {
+      if (rewardTimer) clearTimeout(rewardTimer);
+      rewardToast.textContent = awarded > 0
+        ? `+${awarded} ⭐  (přesnost ${accuracy}%)`
+        : `0 ⭐  Příště lépe! (${accuracy}%)`;
+      rewardToast.style.background = awarded > 0
+        ? 'linear-gradient(135deg,#f59e0b,#d97706)'
+        : 'linear-gradient(135deg,#64748b,#475569)';
+      rewardToast.classList.remove('hide');
+      rewardTimer = setTimeout(() => rewardToast.classList.add('hide'), 3000);
+    }
 
     // ── Iframe detection ──────────────────────────────────────────────
     if (window !== window.top) {
       document.getElementById('sel-header').classList.add('hidden');
       document.getElementById('game-title-center').classList.add('hidden');
-      document.getElementById('sel-main').classList.remove('pt-3');
-      document.getElementById('sel-main').classList.add('pt-4');
+      document.getElementById('sel-main').classList.replace('pt-3','pt-4');
     }
 
     // ── Build selection cards ─────────────────────────────────────────
     LEVELS.forEach((lvl, i) => {
       const [bg, border, text] = lvl.color;
       const btn = document.createElement('button');
-      btn.className = 'sel-card rounded-2xl border flex flex-col items-center justify-center gap-2 py-5 px-3 text-center';
+      btn.className = 'sel-card rounded-2xl border flex flex-col items-center justify-center gap-1.5 py-4 px-3 text-center';
       btn.style.cssText = `background:${bg};border-color:${border};min-height:130px`;
       btn.innerHTML = `
-        <span class="font-black leading-none tracking-wide" style="color:${text};font-size:clamp(1.1rem,3vw,1.7rem)">${lvl.preview}</span>
+        <span class="font-black leading-none tracking-wide" style="color:${text};font-size:clamp(1rem,2.5vw,1.5rem)">${lvl.preview}</span>
         <span class="text-sm font-black text-white/80">${lvl.label}</span>
-        <span class="text-xs font-bold opacity-40">${lvl.desc}</span>`;
+        <span class="text-xs font-bold opacity-40">${lvl.desc}</span>
+        <span class="text-xs font-black mt-1" style="color:${text}">💰 ${lvl.cost}⭐ → max +${lvl.maxReward}⭐</span>`;
       btn.addEventListener('click', () => startGame(i));
       levelGrid.appendChild(btn);
     });
 
-    // 8th card — "Vše"
     const allBtn = document.createElement('button');
-    allBtn.className = 'sel-card rounded-2xl border flex flex-col items-center justify-center gap-2 py-5 px-3 text-center';
+    allBtn.className = 'sel-card rounded-2xl border flex flex-col items-center justify-center gap-1.5 py-4 px-3 text-center';
     allBtn.style.cssText = 'background:linear-gradient(135deg,rgba(250,204,21,.2),rgba(251,146,60,.15));border-color:rgba(250,204,21,.4);min-height:130px';
     allBtn.innerHTML = `
       <span class="font-black leading-none" style="font-size:clamp(1.4rem,3vw,2rem)">🎯</span>
       <span class="text-sm font-black text-white/80">Vše 1–7</span>
-      <span class="text-xs font-bold opacity-40">Všechny úrovně</span>`;
+      <span class="text-xs font-bold opacity-40">Všechny úrovně</span>
+      <span class="text-xs font-black mt-1 text-yellow-400">💰 po úrovních</span>`;
     allBtn.addEventListener('click', () => startGame(-1));
     levelGrid.appendChild(allBtn);
 
     // ── Screen control ────────────────────────────────────────────────
-    function startGame(idx) {
+    async function startGame(idx) {
       mode          = idx < 0 ? 'all' : 'single';
       levelIdx      = idx < 0 ? 0 : idx;
       score         = 0;
       levelProgress = 0;
+      levelWrong    = 0;
       round         = 1;
+
+      if (childId) { const ok = await deductCost(levelIdx); if (!ok) return; }
+
       selScreen.classList.add('hidden');
       gameScreen.classList.remove('hidden');
       updateUI();
@@ -257,37 +360,24 @@
 
     // ── Game logic ────────────────────────────────────────────────────
     function nextQuestion() {
-      const q    = LEVELS[levelIdx].generate();
-      currentDisplay = q.d;
-      currentAnswer  = q.a;
-      inputPos  = 0;
-      locked    = false;
-
+      const q = LEVELS[levelIdx].generate();
+      currentDisplay = q.d; currentAnswer = q.a; inputPos = 0; locked = false;
       letterDisplay.textContent = currentDisplay;
       letterDisplay.className   = 'text-white drop-shadow-2xl';
       letterCard.classList.remove('flash-correct','flash-wrong');
-
-      // Font size based on display length
       const len = currentDisplay.length;
       letterDisplay.style.fontSize =
-        len === 1 ? 'min(30vw,34vh)' :
-        len === 2 ? 'min(17vw,20vh)' :
-                    'min(11vw,13vh)';
-
+        len === 1 ? 'min(30vw,34vh)' : len === 2 ? 'min(17vw,20vh)' : 'min(11vw,13vh)';
       updateAnswerTrack();
     }
 
     function updateAnswerTrack() {
-      if (currentAnswer.length <= 1) {
-        answerTrack.classList.add('hidden');
-        return;
-      }
+      if (currentAnswer.length <= 1) { answerTrack.classList.add('hidden'); return; }
       answerTrack.classList.remove('hidden');
-      const lvlColor = LEVELS[levelIdx].color[2];
-      answerTrack.innerHTML = currentAnswer.split('').map((d, i) =>
-        i < inputPos
-          ? `<span style="color:${lvlColor}">${d}</span>`
-          : `<span style="color:rgba(255,255,255,.2)">_</span>`
+      const c = LEVELS[levelIdx].color[2];
+      answerTrack.innerHTML = currentAnswer.split('').map((d,i) =>
+        i < inputPos ? `<span style="color:${c}">${d}</span>`
+                     : `<span style="color:rgba(255,255,255,.2)">_</span>`
       ).join('');
     }
 
@@ -310,7 +400,7 @@
         LEVELS.forEach((_,i) => {
           const d = document.createElement('div');
           d.className = 'lvl-dot';
-          if (i < levelIdx)        d.classList.add('done');
+          if (i < levelIdx) d.classList.add('done');
           else if (i === levelIdx) d.classList.add('current');
           levelDots.appendChild(d);
         });
@@ -319,15 +409,14 @@
 
     function showFeedback(msg, color) {
       if (fbTimer) clearTimeout(fbTimer);
-      feedbackEl.textContent = msg;
-      feedbackEl.style.color = color;
+      feedbackEl.textContent = msg; feedbackEl.style.color = color;
       feedbackEl.classList.remove('hide');
       fbTimer = setTimeout(() => feedbackEl.classList.add('hide'), 900);
     }
 
     function flash(cls) {
-      letterDisplay.classList.add(cls === 'correct' ? 'scale-up' : 'scale-down');
-      letterCard.classList.add(cls === 'correct' ? 'flash-correct' : 'flash-wrong');
+      letterDisplay.classList.add(cls==='correct' ? 'scale-up' : 'scale-down');
+      letterCard.classList.add(cls==='correct' ? 'flash-correct' : 'flash-wrong');
       setTimeout(() => {
         letterDisplay.classList.remove('scale-up','scale-down');
         letterCard.classList.remove('flash-correct','flash-wrong');
@@ -335,46 +424,40 @@
     }
 
     function handleCorrect() {
-      score++;
-      levelProgress++;
-      flash('correct');
-      showFeedback('Super! ✅', '#4ade80');
-      updateUI();
+      score++; levelProgress++;
+      flash('correct'); showFeedback('Super! ✅', '#4ade80'); updateUI();
 
       const lvl = LEVELS[levelIdx];
       if (levelProgress >= lvl.target) {
         locked = true;
-        setTimeout(() => {
+        setTimeout(async () => {
           if (mode === 'single') {
-            round++;
-            levelProgress = 0;
+            await awardPoints(levelProgress, levelWrong, levelIdx);
+            levelWrong=0; round++; levelProgress=0;
+            if (childId) { const ok=await deductCost(levelIdx); if (!ok) { goToSelection(); return; } }
             updateUI();
-            letterDisplay.textContent = '🎉';
-            letterDisplay.classList.add('level-up-anim');
-            letterDisplay.style.fontSize = 'min(18vw,20vh)';
-            answerTrack.classList.add('hidden');
-            showFeedback(`Kolo ${round}! 🚀`, '#facc15');
+            letterDisplay.textContent='🎉'; letterDisplay.classList.add('level-up-anim');
+            letterDisplay.style.fontSize='min(18vw,20vh)'; answerTrack.classList.add('hidden');
+            showFeedback(`Kolo ${round}! 🚀`,'#facc15');
             setTimeout(nextQuestion, 900);
-          } else if (levelIdx < LEVELS.length - 1) {
-            levelIdx++;
-            levelProgress = 0;
+
+          } else if (levelIdx < LEVELS.length-1) {
+            await awardPoints(levelProgress, levelWrong, levelIdx);
+            levelWrong=0; levelIdx++; levelProgress=0;
+            if (childId) { const ok=await deductCost(levelIdx); if (!ok) { goToSelection(); return; } }
             updateUI();
-            letterDisplay.textContent = '🎉';
-            letterDisplay.classList.add('level-up-anim');
-            letterDisplay.style.fontSize = 'min(18vw,20vh)';
-            answerTrack.classList.add('hidden');
-            showFeedback(`Úroveň ${LEVELS[levelIdx].id}! 🚀`, '#facc15');
+            letterDisplay.textContent='🎉'; letterDisplay.classList.add('level-up-anim');
+            letterDisplay.style.fontSize='min(18vw,20vh)'; answerTrack.classList.add('hidden');
+            showFeedback(`Úroveň ${LEVELS[levelIdx].id}! 🚀`,'#facc15');
             setTimeout(nextQuestion, 900);
+
           } else {
-            letterDisplay.textContent = '🏆';
-            letterDisplay.style.fontSize = 'min(20vw,22vh)';
-            letterDisplay.classList.add('level-up-anim');
-            answerTrack.classList.add('hidden');
-            feedbackEl.textContent = `🎉 Hotovo! ${score} bodů!`;
-            feedbackEl.style.color = '#facc15';
+            await awardPoints(levelProgress, levelWrong, levelIdx);
+            letterDisplay.textContent='🏆'; letterDisplay.style.fontSize='min(20vw,22vh)';
+            letterDisplay.classList.add('level-up-anim'); answerTrack.classList.add('hidden');
+            feedbackEl.textContent=`🎉 Hotovo! ${score} skóre!`; feedbackEl.style.color='#facc15';
             feedbackEl.classList.remove('hide');
-            nextLabel.textContent   = 'hotovo!';
-            progressBar.style.width = '100%';
+            nextLabel.textContent='hotovo!'; progressBar.style.width='100%';
           }
         }, 500);
       } else {
@@ -383,10 +466,8 @@
     }
 
     function handleWrong() {
-      inputPos = 0;
-      updateAnswerTrack();
-      flash('wrong');
-      showFeedback('Zkus znovu! ❌', '#f87171');
+      levelWrong++; inputPos=0; updateAnswerTrack();
+      flash('wrong'); showFeedback('Zkus znovu! ❌','#f87171');
     }
 
     // ── Keyboard ──────────────────────────────────────────────────────
@@ -394,28 +475,24 @@
       if (locked) return;
       if (!/^[0-9]$/.test(e.key)) return;
       if (e.ctrlKey || e.altKey || e.metaKey) return;
-
       if (e.key === currentAnswer[inputPos]) {
         inputPos++;
-        if (inputPos >= currentAnswer.length) {
-          handleCorrect();
-        } else {
-          updateAnswerTrack();
-          showFeedback('Dál! 👍', '#facc15');
-        }
-      } else {
-        handleWrong();
-      }
+        if (inputPos >= currentAnswer.length) { handleCorrect(); }
+        else { updateAnswerTrack(); showFeedback('Dál! 👍','#facc15'); }
+      } else { handleWrong(); }
     });
 
     // ── Stars ─────────────────────────────────────────────────────────
     const se = document.getElementById('stars');
-    for (let i = 0; i < 70; i++) {
-      const s = document.createElement('div'), z = Math.random()*2.5+.5;
-      s.className = 'star';
-      s.style.cssText = `width:${z}px;height:${z}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--delay:-${(Math.random()*5).toFixed(1)}s;`;
+    for (let i=0;i<70;i++) {
+      const s=document.createElement('div'), z=Math.random()*2.5+.5;
+      s.className='star';
+      s.style.cssText=`width:${z}px;height:${z}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--delay:-${(Math.random()*5).toFixed(1)}s;`;
       se.appendChild(s);
     }
+
+    // ── Init ──────────────────────────────────────────────────────────
+    fetchBalance();
   </script>
 </body>
 </html>

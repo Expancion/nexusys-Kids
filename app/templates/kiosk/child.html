@@ -166,7 +166,7 @@
       <!-- Dynamic tiles from DB (non-video category) -->
       {% for tile in extra_tiles %}
       <div class="kiosk-card rounded-3xl overflow-hidden"
-           onclick="openTile('{{ tile.url }}', '{{ tile.name | e }}')"
+           onclick="openTile('{{ tile.url }}?child_id={{ child.id }}', '{{ tile.name | e }}')"
            style="background: {{ tile.color }}; aspect-ratio: 1/1;"
            role="button">
         <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
