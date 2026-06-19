@@ -52,7 +52,7 @@
         <label class="block text-sm font-bold text-slate-300 mb-1.5">Název</label>
         <input type="text" name="name" required maxlength="80"
                value="{{ tile.name if tile else '' }}"
-               placeholder="YouTube Kids"
+               placeholder="Písmenka"
                oninput="document.getElementById('preview-name').textContent = this.value || 'Název'"
                class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                       placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
@@ -62,9 +62,9 @@
       <!-- URL -->
       <div>
         <label class="block text-sm font-bold text-slate-300 mb-1.5">URL adresa</label>
-        <input type="url" name="url" required maxlength="255"
+        <input type="text" name="url" required maxlength="255"
                value="{{ tile.url if tile else '' }}"
-               placeholder="https://www.youtubekids.com"
+               placeholder="https://example.com nebo /games/letters"
                class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                       placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
                       focus:ring-1 focus:ring-indigo-500 transition font-mono text-sm" />
