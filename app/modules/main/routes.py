@@ -22,6 +22,8 @@ DEFAULT_TILES = [
      "color": "linear-gradient(135deg,#ef4444,#b91c1c)", "sort_order": 1},
     {"name": "Písmenka", "url": "/games/letters", "icon": "✏️", "category": "hry",
      "color": "linear-gradient(135deg,#8b5cf6,#6d28d9)", "sort_order": 10},
+    {"name": "Čísla",    "url": "/games/numbers", "icon": "🔢", "category": "hry",
+     "color": "linear-gradient(135deg,#f59e0b,#d97706)", "sort_order": 11},
 ]
 
 
