@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="cs" translate="no">
+<head>
+  {% include '_kiosk_head.html' %}
+  <meta name="google" content="notranslate">
+  <title>Písmenka – Nexus Junior</title>
+  <style>
+    #letter-display {
+      font-weight: 900; line-height: 1;
+      transition: transform 0.15s cubic-bezier(.34,1.56,.64,1);
+      user-select: none;
+    }
+    #letter-card {
+      transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    #letter-card.flash-correct {
+      background: rgba(74,222,128,.18) !important;
+      border-color: rgba(74,222,128,.45) !important;
+      box-shadow: 0 0 60px rgba(74,222,128,.25), 0 8px 32px -4px rgba(0,0,0,.5);
+    }
+    #letter-card.flash-wrong {
+      background: rgba(248,113,113,.18) !important;
+      border-color: rgba(248,113,113,.45) !important;
+      box-shadow: 0 0 60px rgba(248,113,113,.2), 0 8px 32px -4px rgba(0,0,0,.5);
+    }
+    #letter-display.scale-up   { transform: scale(1.18) rotate(-2deg); }
+    #letter-display.scale-down { transform: scale(0.87) rotate(2deg); }
+
+    .lvl-dot {
+      width:11px; height:11px; border-radius:50%;
+      background: rgba(255,255,255,.18);
+      transition: background .3s ease, transform .3s ease;
+    }
+    .lvl-dot.done    { background:#4ade80; }
+    .lvl-dot.current { background:rgba(255,255,255,.8); transform:scale(1.4);
+                       box-shadow:0 0 8px rgba(255,255,255,.5); }
+
+    #feedback {
+      transition: opacity .3s ease, transform .3s ease;
+      transform: translateY(0);
+    }
+    #feedback.hide { opacity:0; transform:translateY(4px); }
+
+    @keyframes levelUp {
+      0%  { transform:scale(.7);  opacity:0; }
+      60% { transform:scale(1.25);opacity:1; }
+      100%{ transform:scale(1);   opacity:1; }
+    }
+    .level-up-anim { animation: levelUp .5s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+    .sel-card {
+      transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+      cursor: pointer;
+    }
+    .sel-card:hover, .sel-card:focus-visible {
+      transform: scale(1.05) translateY(-3px);
+      box-shadow: 0 12px 40px -8px rgba(0,0,0,.6);
+      outline: none;
+    }
+    .sel-card:active { transform:scale(.97); }
+  </style>
+</head>
+<body class="min-h-screen text-white overflow-hidden">
+  <div class="stars" id="stars"></div>
+
+  <!-- ══════════ SELECTION SCREEN ══════════ -->
+  <div id="sel-screen" class="relative z-10 flex flex-col h-screen">
+
+    <header id="sel-header" class="flex items-center justify-between px-6 py-3 shrink-0">
+      <a href="/" target="_top"
+         class="rounded-2xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-bold
+                text-white/80 hover:bg-white/15 transition">
+        ← Zpět
+      </a>
+      <div class="text-center">
+        <div class="text-2xl font-black">✏️ Písmenka</div>
+        <div class="text-sm text-white/40 font-bold mt-0.5">Vyber co chceš trénovat</div>
+      </div>
+      <div class="min-w-[6rem]"></div>
+    </header>
+
+    <main id="sel-main" class="flex-1 overflow-y-auto px-6 pb-4 pt-3">
+      <div id="level-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- rendered by JS (7 level cards + 1 "Vše" card = 8 items, 2×4 grid) -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ══════════ GAME SCREEN ══════════ -->
+  <div id="game-screen" class="hidden relative z-10 flex flex-col h-screen">
+
+    <header id="game-header" class="flex items-center justify-between px-6 py-3 shrink-0">
+      <button onclick="goToSelection()"
+              class="rounded-2xl border border-white/20 bg-white/5 px-4 py-2 text-sm font-bold
+                     text-white/80 hover:bg-white/15 transition">
+        ← Výběr
+      </button>
+      <div id="game-title-center" class="text-center">
+        <div class="text-xl font-black tracking-tight">✏️ Písmenka</div>
+        <div id="level-label" class="text-sm text-white/50 font-bold mt-0.5">Úroveň 1 · A–E</div>
+      </div>
+      <div class="text-right min-w-[4rem]">
+        <div id="score-display" class="text-3xl font-black tabular-nums">0</div>
+        <div class="text-xs text-white/40 font-bold">bodů</div>
+      </div>
+    </header>
+
+    <main class="flex-1 flex flex-col items-center justify-center gap-5 px-6 overflow-hidden">
+
+      <div id="letter-card"
+           class="flex items-center justify-center rounded-3xl bg-white/5 border border-white/10 shadow-2xl"
+           style="width:min(56vw,52vh);height:min(56vw,52vh);">
+        <div id="letter-display" class="text-white drop-shadow-2xl">A</div>
+      </div>
+
+      <div id="feedback" class="hide text-2xl font-black text-center min-h-[2.2rem]">
+        Super! ✅
+      </div>
+
+      <div class="w-full" style="max-width:min(56vw,52vh)">
+        <div class="flex justify-between text-xs text-white/35 mb-1.5 font-bold">
+          <span id="progress-text">0 / 10</span>
+          <span id="next-label">do další úrovně</span>
+        </div>
+        <div class="h-2.5 rounded-full bg-white/10 overflow-hidden">
+          <div id="progress-bar" class="h-full rounded-full transition-all duration-300"
+               style="width:0%;background:#a78bfa"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="flex items-center justify-center pb-5 shrink-0 min-h-[2rem]">
+      <div id="level-dots" class="flex gap-2"></div>
+      <div id="round-indicator" class="hidden text-sm font-bold text-white/40"></div>
+    </footer>
+
+  </div>
+
+  <script>
+    // ── Level definitions ─────────────────────────────────────────────
+    const LEVELS = [
+      { id:1, letters:['A','B','C','D','E'],                                              target:10, label:'A–E',      preview:'A  B  C  D  E', desc:'Začátečník',  color:['rgba(167,139,250,.18)','rgba(167,139,250,.4)','#a78bfa'] },
+      { id:2, letters:['A','B','C','D','E','F','G','H','I','J'],                         target:15, label:'A–J',      preview:'A  B  C  …  J', desc:'Rozšíř',      color:['rgba(129,140,248,.18)','rgba(129,140,248,.4)','#818cf8'] },
+      { id:3, letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),                            target:26, label:'A–Z',      preview:'A  B  …  Z',    desc:'Celá velká',  color:['rgba(96,165,250,.18)', 'rgba(96,165,250,.4)', '#60a5fa'] },
+      { id:4, letters:['AA','BB','CC','DD','EE','FF','GG'],                              target:14, label:'Zdvojená', preview:'AA  BB  CC',     desc:'Dvojice',     color:['rgba(52,211,153,.18)', 'rgba(52,211,153,.4)', '#34d399'] },
+      { id:5, letters:'abcdefghij'.split(''),                                            target:15, label:'a–j',      preview:'a  b  c  …  j', desc:'Malá',        color:['rgba(244,114,182,.18)','rgba(244,114,182,.4)','#f472b6'] },
+      { id:6, letters:'abcdefghijklmnopqrstuvwxyz'.split(''),                           target:26, label:'a–z',      preview:'a  b  …  z',    desc:'Celá malá',   color:['rgba(251,146,60,.18)', 'rgba(251,146,60,.4)', '#fb923c'] },
+      { id:7, letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''), target:30, label:'Mix',      preview:'Aa  Bb  …  Zz', desc:'Velká & malá', color:['rgba(250,204,21,.18)', 'rgba(250,204,21,.4)', '#facc15'] },
+    ];
+
+    // ── State ─────────────────────────────────────────────────────────
+    let mode          = 'all';
+    let levelIdx      = 0;
+    let score         = 0;
+    let levelProgress = 0;
+    let round         = 1;
+    let currentLetter = '';
+    let pressesNeeded = 1;
+    let pressesLeft   = 1;
+    let locked        = true;
+    let fbTimer       = null;
+
+    // ── DOM refs ──────────────────────────────────────────────────────
+    const selScreen      = document.getElementById('sel-screen');
+    const gameScreen     = document.getElementById('game-screen');
+    const levelGrid      = document.getElementById('level-grid');
+    const letterDisplay  = document.getElementById('letter-display');
+    const letterCard     = document.getElementById('letter-card');
+    const feedbackEl     = document.getElementById('feedback');
+    const scoreEl        = document.getElementById('score-display');
+    const progressBar    = document.getElementById('progress-bar');
+    const progressText   = document.getElementById('progress-text');
+    const levelLabel     = document.getElementById('level-label');
+    const nextLabel      = document.getElementById('next-label');
+    const levelDots      = document.getElementById('level-dots');
+    const roundIndicator = document.getElementById('round-indicator');
+
+    // ── Iframe detection — hide redundant headers when inside kiosk overlay ──
+    const inIframe = window !== window.top;
+    if (inIframe) {
+      document.getElementById('sel-header').classList.add('hidden');
+      document.getElementById('game-title-center').classList.add('hidden');
+      document.getElementById('sel-main').classList.remove('pt-3');
+      document.getElementById('sel-main').classList.add('pt-4');
+    }
+
+    // ── Build selection cards ─────────────────────────────────────────
+    LEVELS.forEach((lvl, i) => {
+      const [bg, border, text] = lvl.color;
+      const btn = document.createElement('button');
+      btn.className = 'sel-card rounded-2xl border flex flex-col items-center justify-center gap-2 py-5 px-3 text-center';
+      btn.style.cssText = `background:${bg};border-color:${border};min-height:130px`;
+      btn.innerHTML = `
+        <span class="font-black leading-none tracking-wide" style="color:${text};font-size:clamp(1.1rem,3vw,1.7rem)">${lvl.preview}</span>
+        <span class="text-sm font-black text-white/80">${lvl.label}</span>
+        <span class="text-xs font-bold opacity-40">${lvl.desc}</span>`;
+      btn.addEventListener('click', () => startGame(i));
+      levelGrid.appendChild(btn);
+    });
+
+    // 8th card — "Vše" — fills the last slot in the 4-col grid
+    const allBtn = document.createElement('button');
+    allBtn.className = 'sel-card rounded-2xl border flex flex-col items-center justify-center gap-2 py-5 px-3 text-center';
+    allBtn.style.cssText = 'background:linear-gradient(135deg,rgba(250,204,21,.2),rgba(251,146,60,.15));border-color:rgba(250,204,21,.4);min-height:130px';
+    allBtn.innerHTML = `
+      <span class="font-black leading-none" style="font-size:clamp(1.4rem,3vw,2rem)">🎯</span>
+      <span class="text-sm font-black text-white/80">Vše 1–7</span>
+      <span class="text-xs font-bold opacity-40">Všechny úrovně</span>`;
+    allBtn.addEventListener('click', () => startGame(-1));
+    levelGrid.appendChild(allBtn);
+
+    // ── Screen control ────────────────────────────────────────────────
+    function startGame(idx) {
+      mode          = idx < 0 ? 'all' : 'single';
+      levelIdx      = idx < 0 ? 0 : idx;
+      score         = 0;
+      levelProgress = 0;
+      round         = 1;
+
+      selScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+      updateUI();
+      nextLetter();
+    }
+
+    function goToSelection() {
+      locked = true;
+      gameScreen.classList.add('hidden');
+      selScreen.classList.remove('hidden');
+    }
+
+    // ── Game logic ────────────────────────────────────────────────────
+    function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function nextLetter() {
+      const lvl     = LEVELS[levelIdx];
+      currentLetter = rand(lvl.letters);
+      pressesNeeded = currentLetter.length;
+      pressesLeft   = pressesNeeded;
+      locked        = false;
+
+      letterDisplay.textContent = currentLetter;
+      letterDisplay.className   = 'text-white drop-shadow-2xl';
+      letterCard.classList.remove('flash-correct','flash-wrong');
+      letterDisplay.style.fontSize = currentLetter.length > 1
+        ? 'min(17vw,20vh)' : 'min(30vw,34vh)';
+    }
+
+    function updateUI() {
+      const lvl = LEVELS[levelIdx];
+      scoreEl.textContent      = score;
+      levelLabel.textContent   = `Úroveň ${lvl.id} · ${lvl.label}`;
+      progressText.textContent = `${levelProgress} / ${lvl.target}`;
+      progressBar.style.width  = `${Math.min(100,(levelProgress/lvl.target)*100)}%`;
+      progressBar.style.background = lvl.color[2];
+      nextLabel.textContent    = mode === 'single' ? 'do dalšího kola' : 'do další úrovně';
+
+      if (mode === 'single') {
+        levelDots.innerHTML = '';
+        roundIndicator.classList.remove('hidden');
+        roundIndicator.textContent = `Kolo ${round}`;
+      } else {
+        roundIndicator.classList.add('hidden');
+        levelDots.innerHTML = '';
+        LEVELS.forEach((_,i) => {
+          const d = document.createElement('div');
+          d.className = 'lvl-dot';
+          if (i < levelIdx)        d.classList.add('done');
+          else if (i === levelIdx) d.classList.add('current');
+          levelDots.appendChild(d);
+        });
+      }
+    }
+
+    function showFeedback(msg, color) {
+      if (fbTimer) clearTimeout(fbTimer);
+      feedbackEl.textContent = msg;
+      feedbackEl.style.color = color;
+      feedbackEl.classList.remove('hide');
+      fbTimer = setTimeout(() => feedbackEl.classList.add('hide'), 900);
+    }
+
+    function flash(cls) {
+      const upDown = cls === 'correct' ? 'scale-up' : 'scale-down';
+      const card   = cls === 'correct' ? 'flash-correct' : 'flash-wrong';
+      letterDisplay.classList.add(upDown);
+      letterCard.classList.add(card);
+      setTimeout(() => {
+        letterDisplay.classList.remove('scale-up','scale-down');
+        letterCard.classList.remove('flash-correct','flash-wrong');
+      }, 350);
+    }
+
+    function handleCorrect() {
+      pressesLeft--;
+      if (pressesLeft > 0) {
+        showFeedback('Ještě jednou! 👍', '#facc15');
+        return;
+      }
+      score++;
+      levelProgress++;
+      flash('correct');
+      showFeedback('Super! ✅', '#4ade80');
+      updateUI();
+
+      const lvl = LEVELS[levelIdx];
+      if (levelProgress >= lvl.target) {
+        locked = true;
+        setTimeout(() => {
+          if (mode === 'single') {
+            round++;
+            levelProgress = 0;
+            updateUI();
+            letterDisplay.textContent = '🎉';
+            letterDisplay.classList.add('level-up-anim');
+            letterDisplay.style.fontSize = 'min(18vw,20vh)';
+            showFeedback(`Kolo ${round}! 🚀`, '#facc15');
+            setTimeout(nextLetter, 900);
+          } else if (levelIdx < LEVELS.length - 1) {
+            levelIdx++;
+            levelProgress = 0;
+            updateUI();
+            letterDisplay.textContent = '🎉';
+            letterDisplay.classList.add('level-up-anim');
+            letterDisplay.style.fontSize = 'min(18vw,20vh)';
+            showFeedback(`Úroveň ${LEVELS[levelIdx].id}! 🚀`, '#facc15');
+            setTimeout(nextLetter, 900);
+          } else {
+            letterDisplay.textContent = '🏆';
+            letterDisplay.style.fontSize = 'min(20vw,22vh)';
+            letterDisplay.classList.add('level-up-anim');
+            feedbackEl.textContent = `🎉 Hotovo! ${score} bodů!`;
+            feedbackEl.style.color = '#facc15';
+            feedbackEl.classList.remove('hide');
+            nextLabel.textContent  = 'hotovo!';
+            progressBar.style.width = '100%';
+          }
+        }, 500);
+      } else {
+        setTimeout(nextLetter, 380);
+      }
+    }
+
+    function handleWrong() {
+      flash('wrong');
+      showFeedback('Zkus znovu! ❌', '#f87171');
+      pressesLeft = pressesNeeded;
+    }
+
+    // ── Keyboard ──────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (locked) return;
+      if (e.key.length !== 1) return;
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      const pressed = e.key.toLowerCase();
+      const target  = currentLetter[0].toLowerCase();
+      if (pressed === target) handleCorrect();
+      else handleWrong();
+    });
+
+    // ── Stars ─────────────────────────────────────────────────────────
+    const se = document.getElementById('stars');
+    for (let i = 0; i < 70; i++) {
+      const s = document.createElement('div'), z = Math.random()*2.5+.5;
+      s.className = 'star';
+      s.style.cssText = `width:${z}px;height:${z}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--delay:-${(Math.random()*5).toFixed(1)}s;`;
+      se.appendChild(s);
+    }
+  </script>
+</body>
+</html>

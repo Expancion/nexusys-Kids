@@ -18,15 +18,20 @@ CATEGORIES = [
 ]
 
 DEFAULT_TILES = [
-    {"name": "Videa", "url": "/videos", "icon": "📺", "category": "videa",
+    {"name": "Videa",    "url": "/videos",        "icon": "📺", "category": "videa",
      "color": "linear-gradient(135deg,#ef4444,#b91c1c)", "sort_order": 1},
+    {"name": "Písmenka", "url": "/games/letters", "icon": "✏️", "category": "hry",
+     "color": "linear-gradient(135deg,#8b5cf6,#6d28d9)", "sort_order": 10},
 ]
 
 
 def _seed_tiles():
-    if KioskTile.query.count() == 0:
-        for t in DEFAULT_TILES:
+    changed = False
+    for t in DEFAULT_TILES:
+        if not KioskTile.query.filter_by(url=t["url"]).first():
             db.session.add(KioskTile(**t))
+            changed = True
+    if changed:
         db.session.commit()
 
 
