@@ -42,7 +42,7 @@ def index():
     _seed_tiles()
     tiles = (
         KioskTile.query
-        .filter_by(enabled=True)
+        .filter(KioskTile.enabled == True, KioskTile.category != 'hry')
         .order_by(KioskTile.sort_order, KioskTile.id)
         .all()
     )
@@ -51,6 +51,7 @@ def index():
 
 @main_bp.get("/kiosk/<int:child_id>")
 def child_kiosk(child_id):
+    _seed_tiles()
     child = db.get_or_404(Child, child_id)
 
     cats = VideoCategory.query.order_by(VideoCategory.sort_order, VideoCategory.id).all()
