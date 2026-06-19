@@ -123,8 +123,13 @@
   </header>
 
   <!-- ═══════════════ SECTION: home ═══════════════ -->
+  {% set total_cards = 2 + extra_tiles|length %}
   <section id="section-home" class="section active flex-1 items-center justify-center px-8 py-10">
-    <div class="w-full max-w-2xl grid grid-cols-2 gap-6">
+    <div class="w-full grid gap-6
+      {% if total_cards <= 2 %}grid-cols-2 max-w-2xl
+      {% elif total_cards == 3 %}grid-cols-3 max-w-3xl
+      {% elif total_cards == 4 %}grid-cols-2 max-w-2xl
+      {% else %}grid-cols-3 max-w-4xl{% endif %}">
 
       <!-- Videos card -->
       <div class="kiosk-card rounded-3xl overflow-hidden"
@@ -157,6 +162,21 @@
           </div>
         </div>
       </div>
+
+      <!-- Dynamic tiles from DB (non-video category) -->
+      {% for tile in extra_tiles %}
+      <div class="kiosk-card rounded-3xl overflow-hidden"
+           onclick="openTile('{{ tile.url }}', '{{ tile.name | e }}')"
+           style="background: {{ tile.color }}; aspect-ratio: 1/1;"
+           role="button">
+        <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
+          <span class="text-7xl select-none">{{ tile.icon }}</span>
+          <div class="text-center">
+            <div class="text-2xl font-black text-white">{{ tile.name }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
 
     </div>
   </section>

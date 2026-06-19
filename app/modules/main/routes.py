@@ -108,11 +108,19 @@ def child_kiosk(child_id):
         for s in ChildSchedule.query.filter_by(child_id=child_id).all()
     ]
 
+    extra_tiles = (
+        KioskTile.query
+        .filter(KioskTile.enabled == True, KioskTile.category != 'videa')
+        .order_by(KioskTile.sort_order, KioskTile.id)
+        .all()
+    )
+
     return render_template(
         "kiosk/child.html",
         child=child,
         cats=cats,
         videos=videos,
+        extra_tiles=extra_tiles,
         chores_json=json.dumps(chores_by_wd),
         done_today_json=json.dumps(list(done_today_ids)),
         schedules_json=json.dumps(schedules_js),
