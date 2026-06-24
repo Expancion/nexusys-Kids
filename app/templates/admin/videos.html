@@ -1,38 +1,115 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Správa videí — Rodičovský panel</title>
+  <title>{{ _('Video management') }} — {{ _('Parent Panel') }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>body { font-family: system-ui, sans-serif; }</style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
 
   {% include 'admin/_admin_nav.html' %}
 
   <main class="max-w-5xl mx-auto px-6 py-8 space-y-10">
+
+    <!-- Import result banner -->
+    {% if request.args.get('imported') %}
+    <div class="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm font-bold text-emerald-400 flex items-center gap-3">
+      <span class="text-xl">✓</span>
+      {{ _('Imported %(n)s videos', n=request.args.get('imported')) }}
+      {% if request.args.get('skipped')|int > 0 %} · {{ request.args.get('skipped') }} {{ _('skipped (duplicates)') }}{% endif %}
+      {% if request.args.get('errors')|int > 0 %} · {{ request.args.get('errors') }} {{ _('errors') }}{% endif %}
+    </div>
+    {% endif %}
+    {% if request.args.get('import_error') == 'no_key' %}
+    <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-3 text-sm font-bold text-amber-400">
+      {{ _('YouTube API key not configured. Add') }} <code class="font-mono bg-black/20 px-1 rounded">YOUTUBE_API_KEY=xxx</code> {{ _('to your') }} <code class="font-mono bg-black/20 px-1 rounded">.env</code> {{ _('file and restart the container.') }}
+      <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank"
+         class="underline ml-2 hover:text-amber-300">{{ _('Get API key') }} →</a>
+    </div>
+    {% elif request.args.get('import_error') == 'bad_url' %}
+    <div class="rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-sm font-bold text-red-400">
+      {{ _('Could not parse playlist ID from URL. Check the link.') }}
+    </div>
+    {% elif request.args.get('import_error') %}
+    <div class="rounded-2xl border border-red-500/30 bg-red-500/10 px-5 py-3 text-sm font-bold text-red-400">
+      {{ _('Import error — check your API key and playlist URL.') }}
+    </div>
+    {% endif %}
 
     <!-- Top actions -->
     <div class="flex flex-wrap gap-3">
       <a href="/admin/videos/new"
          class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-sm font-bold
                 text-white transition active:scale-95">
-        + Přidat video
+        + {{ _('Add video') }}
       </a>
       <a href="/admin/videos/cats/new"
          class="rounded-xl border border-slate-700 hover:border-slate-500 px-5 py-2.5
                 text-sm font-bold text-slate-300 hover:text-white transition">
-        + Nová kategorie
+        + {{ _('New category') }}
       </a>
+      <button onclick="document.getElementById('import-panel').classList.toggle('hidden')"
+              class="rounded-xl border border-amber-500/40 hover:border-amber-400/60 px-5 py-2.5
+                     text-sm font-bold text-amber-400 hover:text-amber-300 transition">
+        📥 {{ _('Import playlist') }}
+      </button>
+    </div>
+
+    <!-- Import playlist panel -->
+    <div id="import-panel" class="hidden rounded-2xl border border-slate-700 bg-slate-900 p-6 space-y-4">
+      <h3 class="font-black text-white text-base">{{ _('Import YouTube playlist') }}</h3>
+      <p class="text-sm text-slate-400">
+        {{ _('Paste a playlist URL — the system will automatically fetch titles, thumbnails and channel names for each video. Duplicates are skipped.') }}
+      </p>
+      <form method="post" action="/admin/videos/import-playlist" class="space-y-4">
+
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Playlist URL') }}</label>
+          <input type="text" name="playlist_url" required
+                 placeholder="https://www.youtube.com/playlist?list=PLxxxxxxxx"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                        focus:ring-1 focus:ring-indigo-500 transition font-mono text-sm" />
+        </div>
+
+        <div class="flex flex-wrap gap-4">
+          <div class="flex-1 min-w-48">
+            <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Category') }}</label>
+            <select name="category_id" required
+                    class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                           focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+              {% for cat in cats %}
+              <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="w-44">
+            <label class="block text-sm font-bold text-slate-300 mb-1.5">
+              {{ _('Price') }}
+              <span class="text-slate-500 font-normal">— {{ _('empty = child default') }}</span>
+            </label>
+            <input type="number" name="default_price" min="0" max="9999"
+                   placeholder="{{ _('Default') }}"
+                   class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                          placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                          focus:ring-1 focus:ring-indigo-500 transition" />
+          </div>
+        </div>
+
+        <button type="submit"
+                class="rounded-xl bg-amber-500 hover:bg-amber-400 px-6 py-2.5 text-sm font-bold
+                       text-slate-950 transition active:scale-95">
+          📥 {{ _('Import') }}
+        </button>
+      </form>
     </div>
 
     <!-- Per-category sections -->
     {% for cat in cats %}
     <section class="space-y-3">
 
-      <!-- Category header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0"
@@ -42,8 +119,8 @@
           <div>
             <h2 class="font-black text-white text-lg leading-none">{{ cat.name }}</h2>
             <p class="text-xs text-slate-500 mt-0.5">
-              {{ cat.videos.filter_by(enabled=True).count() }} aktivních ·
-              {{ cat.videos.count() }} celkem
+              {{ cat.videos.filter_by(enabled=True).count() }} {{ _('active') }} ·
+              {{ cat.videos.count() }} {{ _('total') }}
             </p>
           </div>
         </div>
@@ -51,59 +128,61 @@
           <a href="/admin/videos/new?cat={{ cat.id }}"
              class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
                     font-bold text-slate-300 transition">
-            + Video
+            + {{ _('Video') }}
           </a>
           <a href="/admin/videos/cats/{{ cat.id }}/edit"
              class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
                     font-bold text-slate-300 transition">
-            Upravit
+            {{ _('Edit') }}
           </a>
           <form method="post" action="/admin/videos/cats/{{ cat.id }}/delete"
-                onsubmit="return confirm('Smazat kategorii „{{ cat.name }}" i s videi?')">
+                onsubmit="return confirm('{{ _('Delete category and all its videos?') }}')">
             <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
                            font-bold text-red-400 transition">
-              Smazat
+              {{ _('Delete') }}
             </button>
           </form>
         </div>
       </div>
 
-      <!-- Videos in this category -->
       {% set vids = cat.videos.order_by('sort_order','id').all() %}
       {% if vids %}
       <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
         {% for v in vids %}
         <div class="flex items-center gap-4 px-5 py-3 {% if not v.enabled %}opacity-40{% endif %}
                     hover:bg-slate-900/50 transition">
-          <!-- Thumbnail -->
           <img src="{{ v.thumb_url }}" alt=""
                class="w-20 rounded-xl object-cover shrink-0" style="aspect-ratio:16/9">
-          <!-- Info -->
           <div class="flex-1 min-w-0">
             <p class="font-bold text-white truncate">{{ v.title }}</p>
-            <p class="text-xs text-slate-500 font-mono mt-0.5">{{ v.youtube_id }}</p>
+            <div class="flex items-center gap-2 mt-0.5">
+              <p class="text-xs text-slate-500 font-mono">{{ v.youtube_id }}</p>
+              {% if v.channel_name %}
+              <span class="text-xs text-slate-400 bg-slate-800 rounded-full px-2 py-0.5 font-medium">
+                📺 {{ v.channel_name }}
+              </span>
+              {% endif %}
+            </div>
           </div>
-          <!-- Sort order -->
           <span class="text-xs text-slate-600 shrink-0 tabular-nums">#{{ v.sort_order }}</span>
-          <!-- Actions -->
           <div class="flex items-center gap-2 shrink-0">
             <form method="post" action="/admin/videos/{{ v.id }}/toggle">
               <button class="rounded-lg px-3 py-1.5 text-xs font-bold transition
                              {% if v.enabled %}bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
                              {% else %}bg-slate-700 text-slate-400 hover:bg-slate-600{% endif %}">
-                {{ '✓ Aktivní' if v.enabled else '✗ Skryté' }}
+                {% if v.enabled %}✓ {{ _('Active') }}{% else %}✗ {{ _('Hidden') }}{% endif %}
               </button>
             </form>
             <a href="/admin/videos/{{ v.id }}/edit"
                class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
                       font-bold text-slate-300 transition">
-              Upravit
+              {{ _('Edit') }}
             </a>
             <form method="post" action="/admin/videos/{{ v.id }}/delete"
-                  onsubmit="return confirm('Smazat „{{ v.title }}"?')">
+                  onsubmit="return confirm('{{ _('Delete video?') }}')">
               <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
                              font-bold text-red-400 transition">
-                Smazat
+                {{ _('Delete') }}
               </button>
             </form>
           </div>
@@ -113,8 +192,8 @@
       {% else %}
       <div class="rounded-2xl border border-dashed border-slate-800 py-6 text-center
                   text-slate-600 text-sm">
-        Žádná videa — <a href="/admin/videos/new?cat={{ cat.id }}"
-                          class="text-indigo-400 hover:text-indigo-300">přidej první</a>
+        {{ _('No videos —') }} <a href="/admin/videos/new?cat={{ cat.id }}"
+                      class="text-indigo-400 hover:text-indigo-300">{{ _('add first') }}</a>
       </div>
       {% endif %}
 
@@ -124,11 +203,11 @@
     {% if cats|length == 0 %}
     <div class="flex flex-col items-center gap-4 py-20 text-slate-500">
       <span class="text-5xl">🎬</span>
-      <p class="text-lg font-bold">Nejdřív vytvoř kategorii</p>
+      <p class="text-lg font-bold">{{ _('Create a category first') }}</p>
       <a href="/admin/videos/cats/new"
          class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-sm font-bold
                 text-white transition">
-        + Nová kategorie
+        + {{ _('New category') }}
       </a>
     </div>
     {% endif %}

@@ -1,36 +1,35 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nový časový zámek — {{ child.name }}</title>
+  <title>{{ _('New time lock') }} — {{ child.name }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>body { font-family: system-ui, sans-serif; }</style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+  {% include 'admin/_admin_nav.html' %}
 
   <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
               bg-slate-950/90 backdrop-blur px-6 py-3">
     <a href="/admin/children/{{ child.id }}" class="text-slate-400 hover:text-white transition">←</a>
-    <span class="font-black text-white">Nový časový zámek — {{ child.name }}</span>
+    <span class="font-black text-white">{{ _('New time lock') }} — {{ child.name }}</span>
   </nav>
 
   <main class="max-w-lg mx-auto px-6 py-8">
     <form method="post" class="space-y-6">
 
       <p class="text-sm text-slate-400">
-        Kiosek bude zamčen v nastaveném čase. Pro noční zámek přes půlnoc (např. 20:30 → 07:00)
-        zadej čas tak, že <em>od</em> je větší než <em>do</em>.
+        {{ _('The kiosk will be locked at the set time. For a lock spanning midnight (e.g. 20:30 → 07:00), set "from" greater than "to".') }}
       </p>
 
       <!-- Day -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">Den v týdnu</label>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Day of week') }}</label>
         <select name="weekday"
                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                        focus:outline-none focus:border-indigo-500 transition">
-          <option value="">Každý den</option>
+          <option value="">{{ _('Every day') }}</option>
           {% for day in weekdays %}
           <option value="{{ loop.index0 }}">{{ day }}</option>
           {% endfor %}
@@ -40,14 +39,14 @@
       <!-- Time range -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Zamknout od</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Lock from') }}</label>
           <input type="time" name="locked_from" required
                  value="{{ schedule.locked_from.strftime('%H:%M') if schedule else '20:30' }}"
                  class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                         focus:outline-none focus:border-indigo-500 transition" />
         </div>
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Odemknout v</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Unlock at') }}</label>
           <input type="time" name="locked_to" required
                  value="{{ schedule.locked_to.strftime('%H:%M') if schedule else '07:00' }}"
                  class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
@@ -57,9 +56,9 @@
 
       <!-- Message -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">Zpráva pro dítě</label>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Message for child') }}</label>
         <input type="text" name="message" maxlength="200"
-               value="{{ schedule.message if schedule else 'Kiosek je teď zamčený. Jdi spát! 🌙' }}"
+               value="{{ schedule.message if schedule else _('Kiosk is locked now. Time to sleep! 🌙') }}"
                class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                       focus:outline-none focus:border-indigo-500 transition" />
       </div>
@@ -74,11 +73,11 @@
         <button type="submit"
                 class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
                        text-white transition active:scale-95">
-          Uložit zámek
+          {{ _('Save lock') }}
         </button>
         <a href="/admin/children/{{ child.id }}"
            class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
-                  hover:border-slate-500 hover:text-white transition">Zrušit</a>
+                  hover:border-slate-500 hover:text-white transition">{{ _('Cancel') }}</a>
       </div>
     </form>
   </main>

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="{{ get_locale() }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ _('Statistics') }} — {{ _('Parent Panel') }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; }
+    .kpi-card { transition: transform .15s ease; }
+    .kpi-card:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+
+  {% include 'admin/_admin_nav.html' %}
+
+  <main class="max-w-6xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Header + child selector -->
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <h1 class="text-2xl font-black text-white">📊 {{ _('Statistics') }}</h1>
+        <p class="text-sm text-slate-400 mt-1">{{ _('Activity for the last 14 days.') }}</p>
+      </div>
+      {% if children|length > 1 %}
+      <div class="flex gap-2 flex-wrap">
+        {% for c in children %}
+        <a href="/admin/stats?child_id={{ c.id }}"
+           class="rounded-xl px-4 py-2 text-sm font-bold transition
+                  {% if child and child.id == c.id %}bg-indigo-600 text-white
+                  {% else %}border border-slate-700 text-slate-400 hover:text-white{% endif %}">
+          {{ c.avatar_icon }} {{ c.name }}
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    {% if child %}
+
+    <!-- KPI cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      <div class="kpi-card col-span-1 rounded-2xl border border-slate-800 bg-slate-900 p-5 text-center">
+        <div class="text-3xl font-black text-yellow-400">{{ child.points }}</div>
+        <div class="text-xs text-slate-400 font-bold mt-1">{{ _('Current balance') }}</div>
+      </div>
+      <div class="kpi-card rounded-2xl border border-emerald-900/50 bg-emerald-950/40 p-5 text-center">
+        <div class="text-3xl font-black text-emerald-400">+{{ total_earned }}</div>
+        <div class="text-xs text-slate-400 font-bold mt-1">{{ _('Points earned') }}</div>
+      </div>
+      <div class="kpi-card rounded-2xl border border-rose-900/50 bg-rose-950/40 p-5 text-center">
+        <div class="text-3xl font-black text-rose-400">-{{ total_spent }}</div>
+        <div class="text-xs text-slate-400 font-bold mt-1">{{ _('Points spent') }}</div>
+      </div>
+      <div class="kpi-card rounded-2xl border border-sky-900/50 bg-sky-950/40 p-5 text-center">
+        <div class="text-3xl font-black text-sky-400">{{ total_watches }}</div>
+        <div class="text-xs text-slate-400 font-bold mt-1">{{ _('Videos watched') }}</div>
+      </div>
+      <div class="kpi-card rounded-2xl border border-violet-900/50 bg-violet-950/40 p-5 text-center">
+        <div class="text-3xl font-black text-violet-400">{{ total_chores }}</div>
+        <div class="text-xs text-slate-400 font-bold mt-1">{{ _('Tasks completed') }}</div>
+      </div>
+    </div>
+
+    <!-- Line chart: points over time -->
+    <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+      <h2 class="text-base font-black text-white mb-4">⭐ {{ _('Points — earned vs. spent') }}</h2>
+      <div style="height: 260px;">
+        <canvas id="pointsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Bar charts row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <h2 class="text-base font-black text-white mb-4">🎬 {{ _('Videos per day') }}</h2>
+        <div style="height: 220px;">
+          <canvas id="videosChart"></canvas>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <h2 class="text-base font-black text-white mb-4">✅ {{ _('Tasks per day') }}</h2>
+        <div style="height: 220px;">
+          <canvas id="choresChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Doughnut: income sources -->
+    {% if actor_labels %}
+    <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6 flex flex-col sm:flex-row gap-8 items-center">
+      <div>
+        <h2 class="text-base font-black text-white mb-1">🏆 {{ _('Where points came from') }}</h2>
+        <p class="text-xs text-slate-500 mb-4">{{ _('All time total') }}</p>
+        <div style="width: 220px; height: 220px;">
+          <canvas id="sourceChart"></canvas>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2" id="source-legend"></div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="rounded-2xl border border-slate-800 bg-slate-900 p-12 text-center text-slate-500">
+      <div class="text-5xl mb-4">👶</div>
+      <p class="font-bold">{{ _('Add a child first in the Children section.') }}</p>
+    </div>
+    {% endif %}
+
+  </main>
+
+  <script>
+    const LABELS  = {{ labels | tojson }};
+    const EARNED  = {{ earned_s | tojson }};
+    const SPENT   = {{ spent_s  | tojson }};
+    const WATCHES = {{ watch_s  | tojson }};
+    const CHORES  = {{ chore_s  | tojson }};
+    const SRC_LABELS = {{ actor_labels | tojson }};
+    const SRC_VALUES = {{ actor_values | tojson }};
+
+    Chart.defaults.color = 'rgba(148,163,184,1)';
+    Chart.defaults.borderColor = 'rgba(51,65,85,.5)';
+
+    const GRID = { color: 'rgba(51,65,85,.5)' };
+    const FONT = { family: 'system-ui', weight: 'bold' };
+
+    new Chart(document.getElementById('pointsChart'), {
+      type: 'line',
+      data: {
+        labels: LABELS,
+        datasets: [
+          {
+            label: '{{ _('Earned') }} ⭐',
+            data: EARNED,
+            borderColor: '#34d399',
+            backgroundColor: 'rgba(52,211,153,.12)',
+            fill: true, tension: .4,
+            pointBackgroundColor: '#34d399', pointRadius: 4, pointHoverRadius: 6,
+          },
+          {
+            label: '{{ _('Spent') }} ⭐',
+            data: SPENT,
+            borderColor: '#fb7185',
+            backgroundColor: 'rgba(251,113,133,.1)',
+            fill: true, tension: .4,
+            pointBackgroundColor: '#fb7185', pointRadius: 4, pointHoverRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { font: FONT } } },
+        scales: {
+          x: { grid: GRID, ticks: { font: FONT } },
+          y: { grid: GRID, ticks: { font: FONT }, beginAtZero: true },
+        },
+      },
+    });
+
+    new Chart(document.getElementById('videosChart'), {
+      type: 'bar',
+      data: {
+        labels: LABELS,
+        datasets: [{ label: '{{ _('Videos') }}', data: WATCHES,
+          backgroundColor: 'rgba(56,189,248,.7)', borderColor: '#38bdf8',
+          borderWidth: 1, borderRadius: 6 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: GRID, ticks: { font: FONT } },
+          y: { grid: GRID, ticks: { font: FONT, stepSize: 1 }, beginAtZero: true },
+        },
+      },
+    });
+
+    new Chart(document.getElementById('choresChart'), {
+      type: 'bar',
+      data: {
+        labels: LABELS,
+        datasets: [{ label: '{{ _('Tasks') }}', data: CHORES,
+          backgroundColor: 'rgba(167,139,250,.7)', borderColor: '#a78bfa',
+          borderWidth: 1, borderRadius: 6 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: GRID, ticks: { font: FONT } },
+          y: { grid: GRID, ticks: { font: FONT, stepSize: 1 }, beginAtZero: true },
+        },
+      },
+    });
+
+    if (SRC_LABELS.length > 0) {
+      const PALETTE = ['#34d399','#a78bfa','#fbbf24','#38bdf8','#fb7185','#f97316'];
+      new Chart(document.getElementById('sourceChart'), {
+        type: 'doughnut',
+        data: {
+          labels: SRC_LABELS,
+          datasets: [{ data: SRC_VALUES, backgroundColor: PALETTE,
+            borderColor: '#0f172a', borderWidth: 3, hoverOffset: 8 }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '62%',
+          plugins: { legend: { display: false } },
+        },
+      });
+
+      const legend = document.getElementById('source-legend');
+      const total = SRC_VALUES.reduce((a, b) => a + b, 0);
+      SRC_LABELS.forEach((lbl, i) => {
+        const pct = total > 0 ? Math.round(SRC_VALUES[i] / total * 100) : 0;
+        legend.innerHTML += `
+          <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full shrink-0" style="background:${PALETTE[i]}"></div>
+            <span class="text-sm font-bold text-slate-300">${lbl}</span>
+            <span class="text-sm font-black text-white ml-auto pl-4">+${SRC_VALUES[i]} ⭐</span>
+            <span class="text-xs text-slate-500">${pct}%</span>
+          </div>`;
+      });
+    }
+  </script>
+</body>
+</html>

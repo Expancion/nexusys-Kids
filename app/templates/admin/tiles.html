@@ -1,10 +1,9 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Správa dlaždic — Rodičovský panel</title>
+  <title>{{ _('Kiosk tiles') }} — {{ _('Parent Panel') }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: system-ui, sans-serif; }
@@ -15,23 +14,21 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
 
   {% include 'admin/_admin_nav.html' %}
 
   <main class="max-w-4xl mx-auto px-6 py-8 space-y-6">
 
-    <!-- Add button -->
     <div class="flex justify-between items-center">
-      <h2 class="text-lg font-black text-white">Dlaždice kiosku</h2>
+      <h2 class="text-lg font-black text-white">{{ _('Kiosk tiles') }}</h2>
       <a href="/admin/tiles/new"
          class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-sm font-bold
                 text-white transition active:scale-95">
-        + Přidat dlaždici
+        + {{ _('Add tile') }}
       </a>
     </div>
 
-    <!-- Tiles list -->
     {% if tiles %}
     <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
       {% for tile in tiles %}
@@ -39,55 +36,48 @@
                   {% if not tile.enabled %}opacity-40{% endif %}
                   hover:bg-slate-900/50 transition group">
 
-        <!-- Preview -->
         <div class="tile-preview" style="background: {{ tile.color }};">
           {{ tile.icon }}
         </div>
 
-        <!-- Info -->
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
             <span class="font-bold text-white truncate">{{ tile.name }}</span>
             <span class="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-400 shrink-0">
               {% if tile.category == 'videa' %}🎬{% elif tile.category == 'hry' %}🎮{% elif tile.category == 'vzdelavani' %}📚{% else %}🌐{% endif %}
-              {{ categories.get(tile.category, tile.category) }}
+              {{ _(categories.get(tile.category, tile.category)) }}
             </span>
           </div>
           <p class="text-xs text-slate-500 truncate mt-0.5">{{ tile.url }}</p>
         </div>
 
-        <!-- Sort order -->
         <span class="text-xs text-slate-600 shrink-0 tabular-nums">#{{ tile.sort_order }}</span>
 
-        <!-- Actions -->
         <div class="flex items-center gap-2 shrink-0">
 
-          <!-- Toggle -->
           <form method="post" action="/admin/tiles/{{ tile.id }}/toggle">
-            <button title="{{ 'Skrýt' if tile.enabled else 'Zobrazit' }}"
+            <button title="{{ _('Hide') if tile.enabled else _('Show') }}"
                     class="rounded-lg px-3 py-1.5 text-xs font-bold transition
                            {% if tile.enabled %}
                              bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
                            {% else %}
                              bg-slate-700 text-slate-400 hover:bg-slate-600
                            {% endif %}">
-              {{ '✓ Aktivní' if tile.enabled else '✗ Skrytá' }}
+              {% if tile.enabled %}✓ {{ _('Active') }}{% else %}✗ {{ _('Hidden') }}{% endif %}
             </button>
           </form>
 
-          <!-- Edit -->
           <a href="/admin/tiles/{{ tile.id }}/edit"
              class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
                     font-bold text-slate-300 transition">
-            Upravit
+            {{ _('Edit') }}
           </a>
 
-          <!-- Delete -->
           <form method="post" action="/admin/tiles/{{ tile.id }}/delete"
-                onsubmit="return confirm('Opravdu smazat „{{ tile.name }}"?')">
+                onsubmit="return confirm('{{ _('Delete tile?') }}')">
             <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
                            font-bold text-red-400 transition">
-              Smazat
+              {{ _('Delete') }}
             </button>
           </form>
 
@@ -99,11 +89,11 @@
     {% else %}
     <div class="flex flex-col items-center gap-4 py-20 text-slate-500">
       <span class="text-5xl">🧩</span>
-      <p class="text-lg font-bold">Zatím žádné dlaždice</p>
+      <p class="text-lg font-bold">{{ _('No tiles yet') }}</p>
       <a href="/admin/tiles/new"
          class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-sm font-bold
                 text-white transition">
-        Přidat první dlaždici
+        {{ _('Add first tile') }}
       </a>
     </div>
     {% endif %}

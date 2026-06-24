@@ -1,20 +1,20 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ 'Upravit úkol' if chore else 'Nový úkol' }} — {{ child.name }}</title>
+  <title>{% if chore %}{{ _('Edit chore') }}{% else %}{{ _('New chore') }}{% endif %} — {{ child.name }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>body { font-family: system-ui, sans-serif; }</style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+  {% include 'admin/_admin_nav.html' %}
 
   <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
               bg-slate-950/90 backdrop-blur px-6 py-3">
     <a href="/admin/children/{{ child.id }}" class="text-slate-400 hover:text-white transition">←</a>
     <span class="font-black text-white">
-      {{ 'Upravit úkol' if chore else 'Nový úkol' }} — {{ child.name }}
+      {% if chore %}{{ _('Edit chore') }}{% else %}{{ _('New chore') }}{% endif %} — {{ child.name }}
     </span>
   </nav>
 
@@ -28,7 +28,7 @@
         </div>
         <div>
           <div id="name-preview" class="font-black text-white text-lg">
-            {{ chore.chore_name if chore else 'Nový úkol' }}
+            {{ chore.chore_name if chore else _('New chore') }}
           </div>
           <div id="pts-preview" class="text-yellow-400 font-black text-sm">
             +{{ chore.points_reward if chore else 5 }} ⭐
@@ -39,7 +39,7 @@
       <div class="grid grid-cols-2 gap-4">
         <!-- Icon -->
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Icon') }}</label>
           <input type="text" name="chore_icon" maxlength="4"
                  value="{{ chore.chore_icon if chore else '✅' }}"
                  oninput="document.getElementById('icon-preview').textContent=this.value||'✅'"
@@ -48,7 +48,7 @@
         </div>
         <!-- Points -->
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Body za splnění</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Points for completion') }}</label>
           <input type="number" name="points_reward" min="1" max="999" required
                  value="{{ chore.points_reward if chore else 5 }}"
                  oninput="document.getElementById('pts-preview').textContent='+'+this.value+' ⭐'"
@@ -59,18 +59,18 @@
 
       <!-- Name -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">Název úkolu</label>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Chore name') }}</label>
         <input type="text" name="chore_name" required maxlength="100"
                value="{{ chore.chore_name if chore else '' }}"
-               placeholder="Uklidit pokoj"
-               oninput="document.getElementById('name-preview').textContent=this.value||'Nový úkol'"
+               placeholder="{{ _('Clean room') }}"
+               oninput="document.getElementById('name-preview').textContent=this.value||'{{ _('New chore') }}'"
                class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                       placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition" />
       </div>
 
       <!-- Weekday -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">Den v týdnu</label>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Day of week') }}</label>
         <select name="weekday"
                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                        focus:outline-none focus:border-indigo-500 transition">
@@ -93,11 +93,11 @@
         <button type="submit"
                 class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
                        text-white transition active:scale-95">
-          {{ 'Uložit' if chore else 'Přidat úkol' }}
+          {% if chore %}{{ _('Save') }}{% else %}{{ _('Add chore') }}{% endif %}
         </button>
         <a href="/admin/children/{{ child.id }}"
            class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
-                  hover:border-slate-500 hover:text-white transition">Zrušit</a>
+                  hover:border-slate-500 hover:text-white transition">{{ _('Cancel') }}</a>
       </div>
     </form>
   </main>

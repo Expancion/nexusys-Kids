@@ -1,0 +1,1032 @@
+# English translations for Nexusys Junior
+# Copyright (C) 2026 Nexusys Junior Contributors
+msgid ""
+msgstr ""
+"Project-Id-Version: Nexusys Junior\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-23 00:00\n"
+"PO-Revision-Date: 2026-06-23 00:00\n"
+"Last-Translator: \n"
+"Language: en\n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+
+msgid "Content"
+msgstr "Content"
+
+msgid "Tiles"
+msgstr "Tiles"
+
+msgid "Videos"
+msgstr "Videos"
+
+msgid "Family"
+msgstr "Family"
+
+msgid "Children"
+msgstr "Children"
+
+msgid "Tasks"
+msgstr "Tasks"
+
+msgid "Shop"
+msgstr "Shop"
+
+msgid "Reports"
+msgstr "Reports"
+
+msgid "Statistics"
+msgstr "Statistics"
+
+msgid "Back to kiosk"
+msgstr "Back to kiosk"
+
+msgid "Sign out"
+msgstr "Sign out"
+
+
+msgid "Parent Panel"
+msgstr "Parent Panel"
+
+msgid "Enter the parent password to continue"
+msgstr "Enter the parent password to continue"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Sign in"
+msgstr "Sign in"
+
+msgid "Wrong password"
+msgstr "Wrong password"
+
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Child"
+msgstr "Child"
+
+msgid "Active videos"
+msgstr "Active videos"
+
+msgid "Shop rewards"
+msgstr "Shop rewards"
+
+msgid "Tasks done today"
+msgstr "Tasks done today"
+
+msgid "Today"
+msgstr "Today"
+
+msgid "tasks"
+msgstr "tasks"
+
+msgid "videos today"
+msgstr "videos today"
+
+msgid "No children yet."
+msgstr "No children yet."
+
+msgid "Add child"
+msgstr "Add child"
+
+msgid "Recent activity"
+msgstr "Recent activity"
+
+msgid "All statistics"
+msgstr "All statistics"
+
+msgid "Send message to kiosk"
+msgstr "Send message to kiosk"
+
+msgid "Message for %(name)s…"
+msgstr "Message for %(name)s…"
+
+msgid "Send"
+msgstr "Send"
+
+msgid "Kiosk settings"
+msgstr "Kiosk settings"
+
+msgid "Video & playlist management"
+msgstr "Video & playlist management"
+
+msgid "Home screen icons"
+msgstr "Home screen icons"
+
+msgid "Task & reward templates"
+msgstr "Task & reward templates"
+
+msgid "Star rewards"
+msgstr "Star rewards"
+
+
+msgid "Add first child"
+msgstr "Add first child"
+
+msgid "No children yet"
+msgstr "No children yet"
+
+msgid "No tasks yet —"
+msgstr "No tasks yet —"
+
+msgid "add your first task"
+msgstr "add your first task"
+
+msgid "for quick rewards"
+msgstr "for quick rewards"
+
+msgid "Detail"
+msgstr "Detail"
+
+msgid "Kiosk"
+msgstr "Kiosk"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Delete %(name)s? This will also delete all points and history."
+msgstr "Delete %(name)s? This will also delete all points and history."
+
+msgid "points"
+msgstr "pts"
+
+
+msgid "Edit child"
+msgstr "Edit child"
+
+msgid "New child"
+msgstr "New child"
+
+msgid "Back"
+msgstr "Back"
+
+msgid "Child name"
+msgstr "Child name"
+
+msgid "Avatar preview"
+msgstr "Avatar preview"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Avatar icon"
+msgstr "Avatar icon"
+
+msgid "Avatar colour"
+msgstr "Avatar colour"
+
+msgid "Starting points"
+msgstr "Starting points"
+
+msgid "Video price (points)"
+msgstr "Video price (pts)"
+
+msgid "Daily video limit"
+msgstr "Daily video limit"
+
+msgid "no limit"
+msgstr "no limit"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Create"
+msgstr "Create"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "points remaining"
+msgstr "pts remaining"
+
+msgid "videos"
+msgstr "videos"
+
+msgid "Add points manually"
+msgstr "Add points manually"
+
+msgid "Points"
+msgstr "Points"
+
+msgid "Reason (optional)"
+msgstr "Reason (optional)"
+
+msgid "Add"
+msgstr "Add"
+
+msgid "Quick task rewards"
+msgstr "Quick task rewards"
+
+msgid "No tasks —"
+msgstr "No tasks —"
+
+msgid "add tasks"
+msgstr "add tasks"
+
+msgid "for quick rewards."
+msgstr "for quick rewards."
+
+msgid "Devices"
+msgstr "Devices"
+
+msgid "Add device"
+msgstr "Add device"
+
+msgid "No devices —"
+msgstr "No devices —"
+
+msgid "add a device"
+msgstr "add a device"
+
+msgid "for device policy API."
+msgstr "for device policy API."
+
+msgid "Allowed"
+msgstr "Allowed"
+
+msgid "Blocked"
+msgstr "Blocked"
+
+msgid "Delete device?"
+msgstr "Delete device?"
+
+msgid "Weekly tasks"
+msgstr "Weekly tasks"
+
+msgid "Add task"
+msgstr "Add task"
+
+msgid "No chores —"
+msgstr "No chores —"
+
+msgid "add first weekly chore"
+msgstr "add first weekly chore"
+
+msgid "and the child can complete it from the kiosk."
+msgstr "and the child can complete it from the kiosk."
+
+msgid "Time locks"
+msgstr "Time locks"
+
+msgid "Add lock"
+msgstr "Add lock"
+
+msgid "Every day"
+msgstr "Every day"
+
+msgid "Delete time lock?"
+msgstr "Delete time lock?"
+
+msgid "No time locks — kiosk is always accessible."
+msgstr "No time locks — kiosk is always accessible."
+
+msgid "Active goal"
+msgstr "Active goal"
+
+msgid "Change goal"
+msgstr "Change goal"
+
+msgid "Set new goal"
+msgstr "Set new goal"
+
+msgid "Goal name"
+msgstr "Goal name"
+
+msgid "Or choose from shop"
+msgstr "Or choose from shop"
+
+msgid "Points history"
+msgstr "Points history"
+
+msgid "last 20"
+msgstr "last 20"
+
+msgid "No transactions"
+msgstr "No transactions"
+
+
+msgid "Edit chore"
+msgstr "Edit chore"
+
+msgid "New chore"
+msgstr "New chore"
+
+msgid "Icon"
+msgstr "Icon"
+
+msgid "Points for completion"
+msgstr "Points for completion"
+
+msgid "Chore name"
+msgstr "Chore name"
+
+msgid "Clean room"
+msgstr "Clean room"
+
+msgid "Day of week"
+msgstr "Day of week"
+
+msgid "Add chore"
+msgstr "Add chore"
+
+
+msgid "Edit device"
+msgstr "Edit device"
+
+msgid "New device"
+msgstr "New device"
+
+msgid "Back to %(name)s"
+msgstr "Back to %(name)s"
+
+msgid "Device name"
+msgstr "Device name"
+
+msgid "Device key"
+msgstr "Device key"
+
+msgid "This key is entered on the device in the"
+msgstr "This key is entered on the device in the"
+
+msgid "parameter for the device policy API."
+msgstr "parameter for the device policy API."
+
+msgid "Device allowed (can launch kiosk)"
+msgstr "Device allowed (can launch kiosk)"
+
+msgid "Message when blocked"
+msgstr "Message when blocked"
+
+msgid "optional"
+msgstr "optional"
+
+msgid "Done for today. Ask dad."
+msgstr "Done for today. Ask dad."
+
+msgid "Shown to the child (and in device policy API) when device is blocked."
+msgstr "Shown to the child (and in device policy API) when device is blocked."
+
+msgid "Add device"
+msgstr "Add device"
+
+
+msgid "Reward shop"
+msgstr "Reward shop"
+
+msgid "Rewards kids can buy with earned stars."
+msgstr "Rewards kids can buy with earned stars."
+
+msgid "New reward"
+msgstr "New reward"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Hidden"
+msgstr "Hidden"
+
+msgid "Delete reward?"
+msgstr "Delete reward?"
+
+msgid "No rewards yet"
+msgstr "No rewards yet"
+
+msgid "Add rewards kids can buy with stars — e.g. \"30 min extra tablet\", \"Choose dinner\", \"Later bedtime\"."
+msgstr "Add rewards kids can buy with stars — e.g. \"30 min extra tablet\", \"Choose dinner\", \"Later bedtime\"."
+
+msgid "Add first reward"
+msgstr "Add first reward"
+
+msgid "Edit reward"
+msgstr "Edit reward"
+
+msgid "Reward name"
+msgstr "Reward name"
+
+msgid "Emoji icon"
+msgstr "Emoji icon"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "30 min extra tablet time"
+msgstr "30 min extra tablet time"
+
+msgid "e.g. valid for one day, parent must approve"
+msgstr "e.g. valid for one day, parent must approve"
+
+msgid "Price in stars"
+msgstr "Price in stars"
+
+msgid "Order"
+msgstr "Order"
+
+msgid "Add reward"
+msgstr "Add reward"
+
+
+msgid "Reward tasks"
+msgstr "Reward tasks"
+
+msgid "Clicking a task in child detail instantly awards points."
+msgstr "Clicking a task in child detail instantly awards points."
+
+msgid "order"
+msgstr "order"
+
+msgid "Tasks let you quickly reward a child with points by clicking a button in their profile."
+msgstr "Tasks let you quickly reward a child with points by clicking a button in their profile."
+
+msgid "Add first task"
+msgstr "Add first task"
+
+msgid "No tasks yet"
+msgstr "No tasks yet"
+
+msgid "Edit task"
+msgstr "Edit task"
+
+msgid "New task"
+msgstr "New task"
+
+msgid "Task name"
+msgstr "Task name"
+
+msgid "Delete task?"
+msgstr "Delete task?"
+
+msgid "Create task"
+msgstr "Create task"
+
+
+msgid "Kiosk tiles"
+msgstr "Kiosk tiles"
+
+msgid "Add tile"
+msgstr "Add tile"
+
+msgid "Hide"
+msgstr "Hide"
+
+msgid "Show"
+msgstr "Show"
+
+msgid "Delete tile?"
+msgstr "Delete tile?"
+
+msgid "No tiles yet"
+msgstr "No tiles yet"
+
+msgid "Add first tile"
+msgstr "Add first tile"
+
+msgid "Edit tile"
+msgstr "Edit tile"
+
+msgid "New tile"
+msgstr "New tile"
+
+msgid "Preview"
+msgstr "Preview"
+
+msgid "Preview updates in real time."
+msgstr "Preview updates in real time."
+
+msgid "Letters"
+msgstr "Letters"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "or"
+msgstr "or"
+
+msgid "Icon (emoji)"
+msgstr "Icon (emoji)"
+
+msgid "Category"
+msgstr "Category"
+
+msgid "Tile colour"
+msgstr "Tile colour"
+
+msgid "lower number = first"
+msgstr "lower number = first"
+
+msgid "Save changes"
+msgstr "Save changes"
+
+
+msgid "Video management"
+msgstr "Video management"
+
+msgid "Imported %(n)s videos"
+msgstr "Imported %(n)s videos"
+
+msgid "skipped (duplicates)"
+msgstr "skipped (duplicates)"
+
+msgid "errors"
+msgstr "errors"
+
+msgid "YouTube API key not configured. Add"
+msgstr "YouTube API key not configured. Add"
+
+msgid "to your"
+msgstr "to your"
+
+msgid "file and restart the container."
+msgstr "file and restart the container."
+
+msgid "Get API key"
+msgstr "Get API key"
+
+msgid "Could not parse playlist ID from URL. Check the link."
+msgstr "Could not parse playlist ID from URL. Check the link."
+
+msgid "Import error — check your API key and playlist URL."
+msgstr "Import error — check your API key and playlist URL."
+
+msgid "Add video"
+msgstr "Add video"
+
+msgid "New category"
+msgstr "New category"
+
+msgid "Import playlist"
+msgstr "Import playlist"
+
+msgid "Import YouTube playlist"
+msgstr "Import YouTube playlist"
+
+msgid "Paste a playlist URL — the system will automatically fetch titles, thumbnails and channel names for each video. Duplicates are skipped."
+msgstr "Paste a playlist URL — the system will automatically fetch titles, thumbnails and channel names for each video. Duplicates are skipped."
+
+msgid "Playlist URL"
+msgstr "Playlist URL"
+
+msgid "Price"
+msgstr "Price"
+
+msgid "empty = child default"
+msgstr "empty = child default"
+
+msgid "Default"
+msgstr "Default"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "active"
+msgstr "active"
+
+msgid "total"
+msgstr "total"
+
+msgid "Delete category and all its videos?"
+msgstr "Delete category and all its videos?"
+
+msgid "No videos —"
+msgstr "No videos —"
+
+msgid "add first"
+msgstr "add first"
+
+msgid "Create a category first"
+msgstr "Create a category first"
+
+msgid "Delete video?"
+msgstr "Delete video?"
+
+msgid "Edit video"
+msgstr "Edit video"
+
+msgid "YouTube URL or ID"
+msgstr "YouTube URL or ID"
+
+msgid "Works: youtube.com/watch?v=… · youtu.be/… · direct ID (11 chars)"
+msgstr "Works: youtube.com/watch?v=… · youtu.be/… · direct ID (11 chars)"
+
+msgid "Video title"
+msgstr "Video title"
+
+msgid "Little Red Riding Hood"
+msgstr "Little Red Riding Hood"
+
+msgid "Channel / YouTuber"
+msgstr "Channel / YouTuber"
+
+msgid "optional, used for filtering in kiosk"
+msgstr "optional, used for filtering in kiosk"
+
+msgid "e.g. MumboJumbo"
+msgstr "e.g. MumboJumbo"
+
+msgid "empty = uses child setting"
+msgstr "empty = uses child setting"
+
+msgid "Child's default price"
+msgstr "Child's default price"
+
+msgid "Time discounts"
+msgstr "Time discounts"
+
+msgid "price at given time (e.g. free 19:00–20:30)"
+msgstr "price at given time (e.g. free 19:00–20:30)"
+
+
+msgid "Edit category"
+msgstr "Edit category"
+
+msgid "Category preview"
+msgstr "Category preview"
+
+msgid "Fairy tales"
+msgstr "Fairy tales"
+
+msgid "Colour"
+msgstr "Colour"
+
+msgid "Create category"
+msgstr "Create category"
+
+
+msgid "New time lock"
+msgstr "New time lock"
+
+msgid "The kiosk will be locked at the set time. For a lock spanning midnight (e.g. 20:30 → 07:00), set \"from\" greater than \"to\"."
+msgstr "The kiosk will be locked at the set time. For a lock spanning midnight (e.g. 20:30 → 07:00), set \"from\" greater than \"to\"."
+
+msgid "Lock from"
+msgstr "Lock from"
+
+msgid "Unlock at"
+msgstr "Unlock at"
+
+msgid "Message for child"
+msgstr "Message for child"
+
+msgid "Kiosk is locked now. Time to sleep! 🌙"
+msgstr "Kiosk is locked now. Time to sleep! 🌙"
+
+msgid "Save lock"
+msgstr "Save lock"
+
+
+msgid "Activity for the last 14 days."
+msgstr "Activity for the last 14 days."
+
+msgid "Current balance"
+msgstr "Current balance"
+
+msgid "Points earned"
+msgstr "Points earned"
+
+msgid "Points spent"
+msgstr "Points spent"
+
+msgid "Videos watched"
+msgstr "Videos watched"
+
+msgid "Tasks completed"
+msgstr "Tasks completed"
+
+msgid "Points — earned vs. spent"
+msgstr "Points — earned vs. spent"
+
+msgid "Videos per day"
+msgstr "Videos per day"
+
+msgid "Tasks per day"
+msgstr "Tasks per day"
+
+msgid "Where points came from"
+msgstr "Where points came from"
+
+msgid "All time total"
+msgstr "All time total"
+
+msgid "Earned"
+msgstr "Earned"
+
+msgid "Spent"
+msgstr "Spent"
+
+msgid "Add a child first in the Children section."
+msgstr "Add a child first in the Children section."
+
+
+msgid "Family media kiosk with parental controls"
+msgstr "Family media kiosk with parental controls"
+
+msgid "Kiosks"
+msgstr "Kiosks"
+
+msgid "Features"
+msgstr "Features"
+
+msgid "YouTube playlists, categories, channel filtering"
+msgstr "YouTube playlists, categories, channel filtering"
+
+msgid "Games"
+msgstr "Games"
+
+msgid "Letters and numbers — educational mini-games"
+msgstr "Letters and numbers — educational mini-games"
+
+msgid "Earn stars by completing tasks, watching videos costs points"
+msgstr "Earn stars by completing tasks, watching videos costs points"
+
+msgid "Daily tasks by weekday, points for completion"
+msgstr "Daily tasks by weekday, points for completion"
+
+msgid "Exchange earned points for real-world rewards"
+msgstr "Exchange earned points for real-world rewards"
+
+msgid "Schedule"
+msgstr "Schedule"
+
+msgid "Kiosk time locks — automatic by day and hour"
+msgstr "Kiosk time locks — automatic by day and hour"
+
+
+msgid "Not enough points!"
+msgstr "Not enough points!"
+
+msgid "Earn points by completing tasks."
+msgstr "Earn points by completing tasks."
+
+msgid "Kiosk is locked"
+msgstr "Kiosk is locked"
+
+msgid "until unlock"
+msgstr "until unlock"
+
+msgid "New badge!"
+msgstr "New badge!"
+
+msgid "Message from parent"
+msgstr "Message from parent"
+
+msgid "What to do today?"
+msgstr "What to do today?"
+
+msgid "video"
+msgstr "video"
+
+msgid "Done!"
+msgstr "Done!"
+
+msgid "videos available"
+msgstr "videos available"
+
+msgid "Weekly plan"
+msgstr "Weekly plan"
+
+msgid "Badges"
+msgstr "Badges"
+
+msgid "earned"
+msgstr "earned"
+
+msgid "History"
+msgstr "History"
+
+msgid "My stars"
+msgstr "My stars"
+
+msgid "All"
+msgstr "All"
+
+msgid "All channels"
+msgstr "All channels"
+
+msgid "No videos yet — parent adds them in the panel"
+msgstr "No videos yet — parent adds them in the panel"
+
+msgid "Complete a task → earn points ⭐"
+msgstr "Complete a task → earn points ⭐"
+
+msgid "Spend stars on real-world rewards 🎁"
+msgstr "Spend stars on real-world rewards 🎁"
+
+msgid "Not enough stars!"
+msgstr "Not enough stars!"
+
+msgid "Purchased!"
+msgstr "Purchased!"
+
+msgid "Tell your parent to fulfil it 😊"
+msgstr "Tell your parent to fulfil it 😊"
+
+msgid "Shop is empty — parent adds rewards"
+msgstr "Shop is empty — parent adds rewards"
+
+msgid "Collect badges for completed challenges ✨"
+msgstr "Collect badges for completed challenges ✨"
+
+msgid "Last 30 star transactions"
+msgstr "Last 30 star transactions"
+
+msgid "No transactions yet"
+msgstr "No transactions yet"
+
+msgid "Weekly tasks"
+msgstr "Weekly tasks"
+
+msgid "Reward shop"
+msgstr "Reward shop"
+
+msgid "My badges"
+msgstr "My badges"
+
+msgid "Star history"
+msgstr "Star history"
+
+
+msgid "Education"
+msgstr "Education"
+
+msgid "Web"
+msgstr "Web"
+
+msgid "English name"
+msgstr "English name"
+
+msgid "Wrong password, try again."
+msgstr "Wrong password, try again."
+
+msgid "Download NixOS config"
+msgstr "Download NixOS config"
+
+msgid "Guide"
+msgstr "Guide"
+
+msgid "User guide"
+msgstr "User guide"
+
+msgid "Everything you need to know about Nexusys Junior."
+msgstr "Everything you need to know about Nexusys Junior."
+
+msgid "How it works"
+msgstr "How it works"
+
+msgid "how_it_works_body"
+msgstr "Nexusys Junior is a family kiosk system. Each child gets their own profile. The kiosk (laptop) runs a locked Chromium browser that shows the child's kiosk page. Children earn stars ⭐ by completing tasks. Stars are the currency — they spend them to watch videos or buy rewards from the shop."
+
+msgid "Tasks → Stars"
+msgstr "Tasks → Stars"
+
+msgid "Stars → Videos / Rewards"
+msgstr "Stars → Videos / Rewards"
+
+msgid "Parent controls everything"
+msgstr "Parent controls everything"
+
+msgid "children_step1"
+msgstr "Go to Children → New child. Set name, avatar emoji, colour, and video cost (stars per video session)."
+
+msgid "children_step2"
+msgstr "The child's kiosk URL is /kiosk/<id>. You'll find it on the home page after clicking the child's avatar."
+
+msgid "children_step3"
+msgstr "In child detail you can manually add or subtract stars, send a kiosk message (popup on screen), and manage devices and schedules."
+
+msgid "Tasks & Chores"
+msgstr "Tasks & Chores"
+
+msgid "Reward tasks"
+msgstr "Reward tasks"
+
+msgid "reward_tasks_body"
+msgstr "Created in the Tasks section. Parent taps a task in child detail to award stars immediately. Good for one-off things like \"cleaned room\" or \"helped with dishes\"."
+
+msgid "Daily chores"
+msgstr "Daily chores"
+
+msgid "daily_chores_body"
+msgstr "Created in Children → Chores for a specific weekday. The child marks them done directly in the kiosk. Stars are awarded automatically. They reset every week."
+
+msgid "shop_body"
+msgstr "Add rewards in the Shop section (e.g. \"Extra screen time\", \"Ice cream\"). Set a star cost. The child buys a reward from the kiosk — their balance drops immediately and a notification appears. You fulfil the reward in real life."
+
+msgid "videos_step1"
+msgstr "Create categories first (e.g. \"Fairy tales\", \"Education\"). Each can have its own icon and colour."
+
+msgid "videos_step2"
+msgstr "Add videos by YouTube URL or ID, or import a whole playlist with one click. The system fetches titles automatically (requires YouTube API key in .env)."
+
+msgid "videos_step3"
+msgstr "Each video can have a custom price or override rules (e.g. fairy tales are free between 19:00–20:30). Leave blank to use the child's default video cost."
+
+msgid "tiles_body"
+msgstr "Tiles are shortcuts shown on the kiosk home screen. They can point to any URL (external website, internal game, etc). Built-in tiles (Videos, Letters, Numbers) are always shown. Custom tiles appear below them. You can set a bilingual name — the kiosk shows the correct one based on the active language."
+
+msgid "Devices & NixOS kiosk"
+msgstr "Devices & NixOS kiosk"
+
+msgid "nixos_step1"
+msgstr "In child detail, add a device with a unique key (e.g. child-laptop). This key identifies the laptop to the server."
+
+msgid "nixos_step2"
+msgstr "Click ↓ NixOS next to the device to download a pre-filled .nix config file. Copy it to /etc/nixos/configuration.nix on the laptop and place your Caddy CA certificate as /etc/nixos/caddy-ca.crt."
+
+msgid "nixos_step3"
+msgstr "Run nixos-rebuild switch. The laptop boots into a locked kiosk. The agent polls /api/device-policy?deviceId=… every 15 seconds and switches Chromium to the kiosk URL or a lock screen based on policy."
+
+msgid "nixos_step4"
+msgstr "Toggle Allowed / Blocked on the device to instantly lock or unlock the kiosk. A custom lock message is shown on screen."
+
+msgid "Tip:"
+msgstr "Tip:"
+
+msgid "nixos_tip"
+msgstr "Set NEXUSYS_PUBLIC_URL=https://your-server-domain in .env so the downloaded NixOS config contains the correct server address automatically."
+
+msgid "Screen time schedules"
+msgstr "Screen time schedules"
+
+msgid "schedules_body"
+msgstr "In child detail, add schedules to automatically lock the kiosk during certain times (e.g. school hours, bedtime). You can set a weekday or apply it every day. A custom message is shown when locked. The kiosk checks schedules client-side every minute."
+
+msgid "stats_body"
+msgstr "The Statistics page shows star balance trends, videos watched per child, most-used tiles, and task completion rate for the last 30 days. Use it to see which children are most active and whether the incentive system is working."
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "Public server URL used in generated NixOS configs."
+msgstr "Public server URL used in generated NixOS configs."
+
+msgid "Required for YouTube playlist import and automatic title fetch."
+msgstr "Required for YouTube playlist import and automatic title fetch."
+
+msgid "Flask session secret — change this in production."
+msgstr "Flask session secret — change this in production."
+
+msgid "PostgreSQL connection string (default: SQLite)."
+msgstr "PostgreSQL connection string (default: SQLite)."
+
+msgid "config_reset_hint"
+msgstr "Admin password is stored hashed in the database. Reset it by running flask shell and calling SystemConfig.set('setup_complete', '0'), then revisit /setup."
+
+msgid "Mon"
+msgstr "Mon"
+
+msgid "Tue"
+msgstr "Tue"
+
+msgid "Wed"
+msgstr "Wed"
+
+msgid "Thu"
+msgstr "Thu"
+
+msgid "Fri"
+msgstr "Fri"
+
+msgid "Sat"
+msgstr "Sat"
+
+msgid "Sun"
+msgstr "Sun"
+
+msgid "Today you reached the daily limit of {n} videos. See you tomorrow! 🌙"
+msgstr "Today you reached the daily limit of {n} videos. See you tomorrow! 🌙"
+
+msgid "All done today ✓"
+msgstr "All done today ✓"
+
+msgid "Today: {done}/{total} done"
+msgstr "Today: {done}/{total} done"
+
+msgid "✓ Done"
+msgstr "✓ Done"
+
+msgid "Buy reward?\n\n{icon} {name}\n\nPrice: {cost} ⭐"
+msgstr "Buy reward?\n\n{icon} {name}\n\nPrice: {cost} ⭐"
+
+msgid "— cost you {cost} ⭐"
+msgstr "— cost you {cost} ⭐"
+
+msgid "You have {bal} ⭐, you need {cost} ⭐"
+msgstr "You have {bal} ⭐, you need {cost} ⭐"
+
+msgid "Connection error"
+msgstr "Connection error"
+
+msgid "Did you complete the task?\n\n{icon} {name}\n\nYou get: +{points} ⭐"
+msgstr "Did you complete the task?\n\n{icon} {name}\n\nYou get: +{points} ⭐"
+
+msgid "+{points} ⭐ {chore} completed! 🎉"
+msgstr "+{points} ⭐ {chore} completed! 🎉"

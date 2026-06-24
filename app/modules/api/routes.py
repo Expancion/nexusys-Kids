@@ -4,9 +4,12 @@ from flask import Blueprint, jsonify, render_template, request
 from sqlalchemy import or_
 
 from ...extensions import db
-from ...models import (Child, ChildSchedule, ChoreCompletion, DailyChore,
-                       Device, KioskVideo, PointTransaction, VideoPriceRule,
-                       WatchSession)
+from sqlalchemy import func
+
+from ...achievements import check_and_award
+from ...models import (Child, ChildAchievement, ChildSchedule, ChoreCompletion,
+                       DailyChore, Device, KioskMessage, KioskVideo,
+                       PointTransaction, ShopReward, VideoPriceRule, WatchSession)
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -14,7 +17,7 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 @api_bp.get("/")
 def api_docs():
     children = Child.query.order_by(Child.name).all()
-    first_key = "nixos-kuba-01"
+    first_key = "my-device-01"
     for child in children:
         dev = child.devices.first()
         if dev:
@@ -88,6 +91,20 @@ def kiosk_watch():
             "message": lock_msg or "Kiosek je teď zamčený.",
         }), 403
 
+    if child.daily_video_limit > 0:
+        watches_today = WatchSession.query.filter(
+            WatchSession.child_id == child.id,
+            func.date(WatchSession.started_at) == date_cls.today(),
+        ).count()
+        if watches_today >= child.daily_video_limit:
+            return jsonify({
+                "ok": False,
+                "reason": "daily_limit_reached",
+                "message": f"Dnes jsi dosáhl/a limitu {child.daily_video_limit} videí. Zítra zase! 🌙",
+                "limit": child.daily_video_limit,
+                "watched_today": watches_today,
+            })
+
     cost = _resolve_video_cost(video_id, child.video_cost)
 
     if child.points < cost:
@@ -106,13 +123,42 @@ def kiosk_watch():
     ])
     db.session.commit()
 
-    return jsonify({"ok": True, "new_balance": child.points})
+    watches_today = WatchSession.query.filter(
+        WatchSession.child_id == child.id,
+        func.date(WatchSession.started_at) == date_cls.today(),
+    ).count()
+
+    return jsonify({
+        "ok": True,
+        "new_balance": child.points,
+        "watched_today": watches_today,
+        "daily_limit": child.daily_video_limit,
+    })
 
 
 @api_bp.get("/child/<int:child_id>/balance")
 def child_balance(child_id):
     child = db.get_or_404(Child, child_id)
     return jsonify({"points": child.points, "name": child.name})
+
+
+@api_bp.get("/child/<int:child_id>/inbox")
+def child_inbox(child_id):
+    child = db.get_or_404(Child, child_id)
+    msgs = (
+        KioskMessage.query
+        .filter_by(child_id=child.id, read_at=None)
+        .order_by(KioskMessage.created_at)
+        .all()
+    )
+    now = dt_cls.utcnow()
+    for m in msgs:
+        m.read_at = now
+    if msgs:
+        db.session.commit()
+    return jsonify({
+        "messages": [{"id": m.id, "text": m.text, "icon": m.icon} for m in msgs]
+    })
 
 
 @api_bp.post("/game/start")
@@ -160,6 +206,50 @@ def game_reward():
                     "new_balance": child.points, "accuracy": round(accuracy * 100)})
 
 
+@api_bp.post("/shop/buy")
+def shop_buy():
+    data      = request.get_json(silent=True) or {}
+    child_id  = data.get("child_id")
+    reward_id = data.get("reward_id")
+
+    if not child_id or not reward_id:
+        return jsonify({"ok": False, "reason": "missing_params"}), 400
+
+    child  = db.get_or_404(Child, child_id)
+    reward = db.get_or_404(ShopReward, reward_id)
+
+    if not reward.active:
+        return jsonify({"ok": False, "reason": "reward_inactive"}), 400
+
+    if child.points < reward.cost_points:
+        return jsonify({
+            "ok": False,
+            "reason": "not_enough_points",
+            "balance": child.points,
+            "cost": reward.cost_points,
+        })
+
+    child.points -= reward.cost_points
+    db.session.add(PointTransaction(
+        child_id=child.id,
+        delta=-reward.cost_points,
+        reason=f"Obchod: {reward.name}",
+        actor="shop",
+    ))
+    db.session.commit()
+
+    new_achievements = check_and_award(child.id)
+
+    return jsonify({
+        "ok": True,
+        "reward_name": reward.name,
+        "reward_icon": reward.icon,
+        "cost": reward.cost_points,
+        "new_balance": child.points,
+        "new_achievements": new_achievements,
+    })
+
+
 @api_bp.post("/kiosk/chore/complete")
 def kiosk_chore_complete():
     data = request.get_json(silent=True) or {}
@@ -192,8 +282,15 @@ def kiosk_chore_complete():
     ])
     db.session.commit()
 
-    return jsonify({"ok": True, "awarded": chore.points_reward,
-                    "new_balance": child.points, "chore_name": chore.chore_name})
+    new_achievements = check_and_award(child.id)
+
+    return jsonify({
+        "ok": True,
+        "awarded": chore.points_reward,
+        "new_balance": child.points,
+        "chore_name": chore.chore_name,
+        "new_achievements": new_achievements,
+    })
 
 
 def _is_schedule_locked(child_id: int) -> tuple[bool, str | None]:

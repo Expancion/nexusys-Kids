@@ -1,10 +1,9 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ 'Upravit' if cat else 'Nová' }} kategorie videí</title>
+  <title>{% if cat %}{{ _('Edit category') }}{% else %}{{ _('New category') }}{% endif %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: system-ui, sans-serif; }
@@ -19,11 +18,12 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+  {% include 'admin/_admin_nav.html' %}
   <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
               bg-slate-950/90 backdrop-blur px-6 py-3">
     <a href="/admin/videos" class="text-slate-400 hover:text-white transition">←</a>
-    <span class="font-black text-white">{{ 'Upravit kategorii' if cat else 'Nová kategorie' }}</span>
+    <span class="font-black text-white">{% if cat %}{{ _('Edit category') }}{% else %}{{ _('New category') }}{% endif %}</span>
   </nav>
 
   <main class="max-w-lg mx-auto px-6 py-8">
@@ -34,28 +34,28 @@
         <div id="cat-preview" style="background: {{ cat.color if cat else gradients[0][1] }};">
           <span id="preview-icon" class="text-3xl leading-none">{{ cat.icon if cat else '🎬' }}</span>
           <span id="preview-name" class="text-white font-black text-xs text-center px-1 truncate max-w-full">
-            {{ cat.name if cat else 'Název' }}
+            {{ cat.name if cat else _('Name') }}
           </span>
         </div>
         <div>
-          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Náhled kategorie</p>
+          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">{{ _('Category preview') }}</p>
         </div>
       </div>
 
       <!-- Name + Icon row -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Název</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Name') }}</label>
           <input type="text" name="name" required maxlength="80"
                  value="{{ cat.name if cat else '' }}"
-                 placeholder="Pohádky"
-                 oninput="document.getElementById('preview-name').textContent=this.value||'Název'"
+                 placeholder="{{ _('Fairy tales') }}"
+                 oninput="document.getElementById('preview-name').textContent=this.value||'{{ _('Name') }}'"
                  class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                         placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
                         focus:ring-1 focus:ring-indigo-500 transition" />
         </div>
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Icon') }}</label>
           <input type="text" name="icon" maxlength="4"
                  value="{{ cat.icon if cat else '🎬' }}"
                  oninput="document.getElementById('preview-icon').textContent=this.value||'🎬'"
@@ -67,7 +67,7 @@
 
       <!-- Color -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-2">Barva</label>
+        <label class="block text-sm font-bold text-slate-300 mb-2">{{ _('Colour') }}</label>
         <input type="hidden" name="color" id="color-input"
                value="{{ cat.color if cat else gradients[0][1] }}" />
         <div class="flex flex-wrap gap-2">
@@ -81,7 +81,7 @@
 
       <!-- Sort order -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">Pořadí</label>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Order') }}</label>
         <input type="number" name="sort_order" min="0" max="999"
                value="{{ cat.sort_order if cat else 0 }}"
                class="w-28 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
@@ -94,11 +94,11 @@
         <button type="submit"
                 class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
                        text-white transition active:scale-95">
-          {{ 'Uložit' if cat else 'Vytvořit kategorii' }}
+          {% if cat %}{{ _('Save') }}{% else %}{{ _('Create category') }}{% endif %}
         </button>
         <a href="/admin/videos"
            class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
-                  hover:border-slate-500 hover:text-white transition">Zrušit</a>
+                  hover:border-slate-500 hover:text-white transition">{{ _('Cancel') }}</a>
       </div>
     </form>
   </main>

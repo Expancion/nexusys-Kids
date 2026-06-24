@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="{{ get_locale() }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ _('Guide') }} — {{ _('Parent Panel') }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; }
+    .card { background: #0f1120; border: 1px solid rgba(255,255,255,.07); border-radius: 1rem; padding: 1.5rem; }
+    .step { display: flex; gap: .75rem; align-items: flex-start; }
+    .step-num { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: rgba(99,102,241,.25);
+                color: #a5b4fc; font-size: 11px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+    code { background: rgba(255,255,255,.08); border-radius: 4px; padding: 1px 6px;
+           font-family: monospace; font-size: .85em; color: #c4b5fd; }
+    .tag { display: inline-block; border-radius: 6px; padding: 1px 8px; font-size: 11px; font-weight: 700; }
+  </style>
+</head>
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+
+  {% include 'admin/_admin_nav.html' %}
+
+  <main class="max-w-3xl mx-auto px-6 py-8 space-y-8">
+
+    <div>
+      <h2 class="text-2xl font-black text-white">{{ _('User guide') }}</h2>
+      <p class="text-slate-400 mt-1 text-sm">{{ _('Everything you need to know about Nexusys Junior.') }}</p>
+    </div>
+
+    {# ── 1. How it works ──────────────────────────────────────────── #}
+    <div class="card space-y-3">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>🏗️</span> {{ _('How it works') }}
+      </h3>
+      <p class="text-sm text-slate-300 leading-relaxed">{{ _('how_it_works_body') }}</p>
+      <div class="flex flex-wrap gap-2 pt-1">
+        <span class="tag bg-indigo-500/15 text-indigo-300">{{ _('Tasks → Stars') }}</span>
+        <span class="tag bg-amber-500/15 text-amber-300">{{ _('Stars → Videos / Rewards') }}</span>
+        <span class="tag bg-emerald-500/15 text-emerald-300">{{ _('Parent controls everything') }}</span>
+      </div>
+    </div>
+
+    {# ── 2. Children ──────────────────────────────────────────────── #}
+    <div class="card space-y-4">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>👶</span> {{ _('Children') }}
+      </h3>
+      <div class="space-y-2">
+        <div class="step"><span class="step-num">1</span>
+          <p class="text-sm text-slate-300">{{ _('children_step1') }}</p></div>
+        <div class="step"><span class="step-num">2</span>
+          <p class="text-sm text-slate-300">{{ _('children_step2') }}</p></div>
+        <div class="step"><span class="step-num">3</span>
+          <p class="text-sm text-slate-300">{{ _('children_step3') }}</p></div>
+      </div>
+    </div>
+
+    {# ── 3. Tasks & Chores ────────────────────────────────────────── #}
+    <div class="card space-y-4">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>⭐</span> {{ _('Tasks & Chores') }}
+      </h3>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="rounded-xl bg-slate-800/50 p-4 space-y-1">
+          <p class="text-xs font-black uppercase tracking-widest text-indigo-400">{{ _('Reward tasks') }}</p>
+          <p class="text-sm text-slate-300">{{ _('reward_tasks_body') }}</p>
+        </div>
+        <div class="rounded-xl bg-slate-800/50 p-4 space-y-1">
+          <p class="text-xs font-black uppercase tracking-widest text-amber-400">{{ _('Daily chores') }}</p>
+          <p class="text-sm text-slate-300">{{ _('daily_chores_body') }}</p>
+        </div>
+      </div>
+    </div>
+
+    {# ── 4. Shop ──────────────────────────────────────────────────── #}
+    <div class="card space-y-3">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>🛒</span> {{ _('Reward shop') }}
+      </h3>
+      <p class="text-sm text-slate-300 leading-relaxed">{{ _('shop_body') }}</p>
+    </div>
+
+    {# ── 5. Videos ────────────────────────────────────────────────── #}
+    <div class="card space-y-4">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>📺</span> {{ _('Videos') }}
+      </h3>
+      <div class="space-y-2">
+        <div class="step"><span class="step-num">1</span>
+          <p class="text-sm text-slate-300">{{ _('videos_step1') }}</p></div>
+        <div class="step"><span class="step-num">2</span>
+          <p class="text-sm text-slate-300">{{ _('videos_step2') }}</p></div>
+        <div class="step"><span class="step-num">3</span>
+          <p class="text-sm text-slate-300">{{ _('videos_step3') }}</p></div>
+      </div>
+    </div>
+
+    {# ── 6. Tiles ─────────────────────────────────────────────────── #}
+    <div class="card space-y-3">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>🧩</span> {{ _('Kiosk tiles') }}
+      </h3>
+      <p class="text-sm text-slate-300 leading-relaxed">{{ _('tiles_body') }}</p>
+    </div>
+
+    {# ── 7. Devices & NixOS ───────────────────────────────────────── #}
+    <div class="card space-y-4">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>💻</span> {{ _('Devices & NixOS kiosk') }}
+      </h3>
+      <div class="space-y-2">
+        <div class="step"><span class="step-num">1</span>
+          <p class="text-sm text-slate-300">{{ _('nixos_step1') }}</p></div>
+        <div class="step"><span class="step-num">2</span>
+          <p class="text-sm text-slate-300">{{ _('nixos_step2') }}</p></div>
+        <div class="step"><span class="step-num">3</span>
+          <p class="text-sm text-slate-300">{{ _('nixos_step3') }}</p></div>
+        <div class="step"><span class="step-num">4</span>
+          <p class="text-sm text-slate-300">{{ _('nixos_step4') }}</p></div>
+      </div>
+      <div class="rounded-xl bg-slate-800/40 px-4 py-3 text-xs text-slate-400 leading-relaxed">
+        <span class="text-slate-300 font-bold">{{ _('Tip:') }}</span>
+        {{ _('nixos_tip') }}
+      </div>
+    </div>
+
+    {# ── 8. Schedules ─────────────────────────────────────────────── #}
+    <div class="card space-y-3">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>🕐</span> {{ _('Screen time schedules') }}
+      </h3>
+      <p class="text-sm text-slate-300 leading-relaxed">{{ _('schedules_body') }}</p>
+    </div>
+
+    {# ── 9. Statistics ────────────────────────────────────────────── #}
+    <div class="card space-y-3">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>📊</span> {{ _('Statistics') }}
+      </h3>
+      <p class="text-sm text-slate-300 leading-relaxed">{{ _('stats_body') }}</p>
+    </div>
+
+    {# ── 10. Config ───────────────────────────────────────────────── #}
+    <div class="card space-y-3">
+      <h3 class="font-black text-white text-lg flex items-center gap-2">
+        <span>⚙️</span> {{ _('Configuration') }}
+      </h3>
+      <div class="space-y-1.5 text-sm">
+        <div class="flex gap-3">
+          <code class="shrink-0">NEXUSYS_PUBLIC_URL</code>
+          <span class="text-slate-400">{{ _('Public server URL used in generated NixOS configs.') }}</span>
+        </div>
+        <div class="flex gap-3">
+          <code class="shrink-0">YOUTUBE_API_KEY</code>
+          <span class="text-slate-400">{{ _('Required for YouTube playlist import and automatic title fetch.') }}</span>
+        </div>
+        <div class="flex gap-3">
+          <code class="shrink-0">SECRET_KEY</code>
+          <span class="text-slate-400">{{ _('Flask session secret — change this in production.') }}</span>
+        </div>
+        <div class="flex gap-3">
+          <code class="shrink-0">DATABASE_URL</code>
+          <span class="text-slate-400">{{ _('PostgreSQL connection string (default: SQLite).') }}</span>
+        </div>
+      </div>
+      <p class="text-xs text-slate-500 pt-1">{{ _('config_reset_hint') }}</p>
+    </div>
+
+  </main>
+</body>
+</html>

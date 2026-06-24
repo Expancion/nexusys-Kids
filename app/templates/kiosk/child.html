@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   {% include '_kiosk_head.html' %}
   <title>{{ child.name }} — kiosek</title>
@@ -42,9 +42,9 @@
      class="fixed inset-0 z-50 flex flex-col items-center justify-center
             bg-slate-950/95 backdrop-blur-sm px-8">
   <div class="text-8xl mb-6 select-none">🔒</div>
-  <h2 class="text-3xl font-black text-white mb-3 text-center">Nemáš dost bodů!</h2>
+  <h2 class="text-3xl font-black text-white mb-3 text-center">{{ _('Not enough points!') }}</h2>
   <p id="no-points-msg" class="text-white/60 text-center max-w-sm mb-8 text-lg">
-    Vydělej si body splněním úkolů.
+    {{ _('Earn points by completing tasks.') }}
   </p>
   <button onclick="document.getElementById('no-points-overlay').style.display='none'"
           class="rounded-2xl bg-slate-800 hover:bg-slate-700 px-10 py-4 text-xl
@@ -60,7 +60,7 @@
             bg-slate-950 px-8">
   <div class="text-center">
     <div class="text-8xl mb-4 select-none" style="animation: pulse 2s ease-in-out infinite;">🌙</div>
-    <h2 class="text-3xl font-black text-white mb-2">Kiosek je zamčený</h2>
+    <h2 class="text-3xl font-black text-white mb-2">{{ _('Kiosk is locked') }}</h2>
     <p id="locked-msg" class="text-white/50 text-lg mb-8 max-w-xs mx-auto">
       {{ locked_msg or '' }}
     </p>
@@ -70,9 +70,41 @@
            class="text-6xl font-black text-yellow-400 tabular-nums tracking-tight leading-none">
         --:--:--
       </div>
-      <div class="text-sm text-white/30 font-bold mt-1">do odemčení</div>
+      <div class="text-sm text-white/30 font-bold mt-1">{{ _('until unlock') }}</div>
     </div>
   </div>
+</div>
+
+<!-- Achievement popup -->
+<div id="ach-overlay"
+     style="display:none;"
+     class="fixed inset-0 z-50 flex flex-col items-center justify-center
+            bg-slate-950/97 backdrop-blur-sm px-8">
+  <div id="ach-icon" class="text-9xl mb-4 select-none"></div>
+  <div class="text-yellow-400 font-black text-sm uppercase tracking-widest mb-2">{{ _('New badge!') }}</div>
+  <h2 id="ach-name" class="text-3xl font-black text-white mb-3 text-center"></h2>
+  <p id="ach-desc" class="text-white/60 text-center text-lg max-w-sm mb-2"></p>
+  <p id="ach-points" class="text-emerald-400 font-black text-xl mb-8"></p>
+  <button onclick="dismissAchievement()"
+          class="rounded-2xl bg-yellow-500 hover:bg-yellow-400 px-12 py-4 text-xl
+                 font-black text-slate-950 transition active:scale-95">
+    Super! 🎉
+  </button>
+</div>
+
+<!-- Message overlay (parent → child) -->
+<div id="msg-overlay"
+     style="display:none;"
+     class="fixed inset-0 z-50 flex flex-col items-center justify-center
+            bg-slate-950/97 backdrop-blur-sm px-8">
+  <div id="msg-icon" class="text-9xl mb-6 select-none" style="animation: bounce 1s infinite;">💬</div>
+  <h2 class="text-2xl font-black text-white mb-4 text-center">{{ _('Message from parent') }}</h2>
+  <p id="msg-text" class="text-white/80 text-center text-xl max-w-sm mb-10 leading-relaxed font-bold"></p>
+  <button onclick="dismissMessage()"
+          class="rounded-2xl bg-indigo-600 hover:bg-indigo-500 px-12 py-4 text-xl
+                 font-black text-white transition active:scale-95">
+    OK 👍
+  </button>
 </div>
 
 <!-- Chore toast -->
@@ -101,18 +133,30 @@
       </div>
       <div class="min-w-0">
         <div class="text-xl font-black text-white leading-none truncate">{{ child.name }}</div>
-        <div id="section-subtitle" class="text-xs text-white/40 font-bold mt-0.5">Co si dneska dáš?</div>
+        <div id="section-subtitle" class="text-xs text-white/40 font-bold mt-0.5">{{ _('What to do today?') }}</div>
       </div>
     </div>
 
-    <div class="flex flex-col items-center shrink-0">
-      <div class="flex items-baseline gap-1">
-        <span class="text-4xl font-black text-yellow-400 leading-none tabular-nums"
-              id="points-display">{{ child.points }}</span>
-        <span class="text-yellow-500/70 font-bold text-sm">⭐</span>
+    <div class="flex items-center gap-4 shrink-0">
+      {% if streak > 0 %}
+      <div class="flex flex-col items-center">
+        <div class="text-2xl leading-none select-none">🔥</div>
+        <div class="text-xs font-black text-orange-400 tabular-nums">{{ streak }}</div>
       </div>
-      <div class="text-xs text-white/40 font-bold mt-0.5">
-        {{ child.video_cost }} ⭐ / video
+      {% endif %}
+      <div class="flex flex-col items-center">
+        <div class="flex items-baseline gap-1">
+          <span class="text-4xl font-black text-yellow-400 leading-none tabular-nums"
+                id="points-display">{{ child.points }}</span>
+          <span class="text-yellow-500/70 font-bold text-sm">⭐</span>
+        </div>
+        <div class="text-xs text-white/40 font-bold mt-0.5">
+          {% if child.daily_video_limit > 0 %}
+            <span id="watch-counter">{{ watches_today }}/{{ child.daily_video_limit }}</span> {{ _('videos') }}
+          {% else %}
+            {{ child.video_cost }} ⭐ / {{ _('video') }}
+          {% endif %}
+        </div>
       </div>
     </div>
 
@@ -122,13 +166,38 @@
     </div>
   </header>
 
+  <!-- Goal progress bar -->
+  {% if active_goal %}
+  {% set pct = [((child.points / active_goal.target_points) * 100) | int, 100] | min %}
+  <div class="px-8 py-2 shrink-0">
+    <div class="rounded-2xl border border-white/8 bg-white/4 px-4 py-2.5 flex items-center gap-3">
+      <span class="text-xl select-none shrink-0">{{ active_goal.icon }}</span>
+      <div class="flex-1 min-w-0">
+        <div class="flex justify-between items-baseline mb-1">
+          <span class="text-xs font-black text-white/70 truncate">{{ active_goal.name }}</span>
+          <span class="text-xs font-black text-yellow-400 shrink-0 ml-2">
+            {{ child.points }}/{{ active_goal.target_points }} ⭐
+          </span>
+        </div>
+        <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+          <div class="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 transition-all"
+               style="width: {{ pct }}%"></div>
+        </div>
+      </div>
+      {% if pct >= 100 %}
+      <span class="text-green-400 font-black text-xs shrink-0">{{ _('Done!') }} 🎉</span>
+      {% else %}
+      <span class="text-white/30 font-bold text-xs shrink-0">{{ pct }}%</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- ═══════════════ SECTION: home ═══════════════ -->
-  {% set total_cards = 2 + extra_tiles|length %}
+  {% set total_cards = 4 + extra_tiles|length %}
   <section id="section-home" class="section active flex-1 items-center justify-center px-8 py-10">
     <div class="w-full grid gap-6
-      {% if total_cards <= 2 %}grid-cols-2 max-w-2xl
-      {% elif total_cards == 3 %}grid-cols-3 max-w-3xl
-      {% elif total_cards == 4 %}grid-cols-2 max-w-2xl
+      {% if total_cards <= 4 %}grid-cols-2 max-w-2xl
       {% else %}grid-cols-3 max-w-4xl{% endif %}">
 
       <!-- Videos card -->
@@ -139,13 +208,30 @@
         <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
           <span class="text-7xl select-none">🎬</span>
           <div class="text-center">
-            <div class="text-2xl font-black text-white">Videa</div>
+            <div class="text-2xl font-black text-white">{{ _('Videos') }}</div>
             <div class="text-sm text-white/70 mt-1">
-              {{ videos | length }} videí k dispozici
+              {{ videos | length }} {{ _('videos available') }}
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Dynamic tiles from DB (hry + ostatní) -->
+      {% for tile in extra_tiles %}
+      <div class="kiosk-card rounded-3xl overflow-hidden"
+           onclick="openTile('{{ tile.url }}?child_id={{ child.id }}', '{{ (tile.name_en if get_locale()|string == 'en' and tile.name_en else tile.name) | e }}')"
+           style="background: {{ tile.color }}; aspect-ratio: 1/1;"
+           role="button">
+        <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
+          <span class="text-7xl select-none">{{ tile.icon }}</span>
+          <div class="text-center">
+            <div class="text-2xl font-black text-white">
+              {{ tile.name_en if get_locale()|string == 'en' and tile.name_en else tile.name }}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
 
       <!-- Chores card -->
       <div class="kiosk-card rounded-3xl overflow-hidden"
@@ -155,28 +241,65 @@
         <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
           <span class="text-7xl select-none">📋</span>
           <div class="text-center">
-            <div class="text-2xl font-black text-white">Úkoly</div>
+            <div class="text-2xl font-black text-white">{{ _('Tasks') }}</div>
             <div class="text-sm text-white/70 mt-1" id="chores-summary">
-              Týdenní plán
+              {{ _('Weekly plan') }}
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Dynamic tiles from DB (non-video category) -->
-      {% for tile in extra_tiles %}
+      <!-- Shop card -->
       <div class="kiosk-card rounded-3xl overflow-hidden"
-           onclick="openTile('{{ tile.url }}?child_id={{ child.id }}', '{{ tile.name | e }}')"
-           style="background: {{ tile.color }}; aspect-ratio: 1/1;"
+           onclick="showSection('shop')"
+           style="background: linear-gradient(135deg,#f59e0b,#b45309); aspect-ratio: 1/1;"
            role="button">
         <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
-          <span class="text-7xl select-none">{{ tile.icon }}</span>
+          <span class="text-7xl select-none">🛒</span>
           <div class="text-center">
-            <div class="text-2xl font-black text-white">{{ tile.name }}</div>
+            <div class="text-2xl font-black text-white">{{ _('Shop') }}</div>
+            <div class="text-sm text-white/70 mt-1">
+              {% set n = shop_rewards | length %}
+              {% if get_locale()|string == 'en' %}
+              {{ n }} {{ 'reward' if n == 1 else 'rewards' }}
+              {% else %}
+              {% if n == 1 %}1 odměna
+              {% elif n in [2, 3, 4] %}{{ n }} odměny
+              {% else %}{{ n }} odměn{% endif %}
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
-      {% endfor %}
+
+      <!-- Achievements card -->
+      {% set earned_count = achievements | selectattr('earned') | list | length %}
+      <div class="kiosk-card rounded-3xl overflow-hidden"
+           onclick="showSection('achievements')"
+           style="background: linear-gradient(135deg,#f59e0b,#92400e); aspect-ratio: 1/1;"
+           role="button">
+        <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
+          <span class="text-7xl select-none">🏆</span>
+          <div class="text-center">
+            <div class="text-2xl font-black text-white">{{ _('Badges') }}</div>
+            <div class="text-sm text-white/70 mt-1">{{ earned_count }}/{{ achievements|length }} {{ _('earned') }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History card -->
+      <div class="kiosk-card rounded-3xl overflow-hidden"
+           onclick="showSection('history')"
+           style="background: linear-gradient(135deg,#10b981,#065f46); aspect-ratio: 1/1;"
+           role="button">
+        <div class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
+          <span class="text-7xl select-none">📊</span>
+          <div class="text-center">
+            <div class="text-2xl font-black text-white">{{ _('History') }}</div>
+            <div class="text-sm text-white/70 mt-1">{{ _('My stars') }}</div>
+          </div>
+        </div>
+      </div>
 
     </div>
   </section>
@@ -187,7 +310,7 @@
     <nav class="flex gap-2 px-8 pt-4 pb-1 shrink-0 flex-wrap items-center">
       <button onclick="filterCat('all', this)"
               class="cat-btn active rounded-2xl px-5 py-2 text-sm font-black text-white bg-white/10">
-        ✨ Vše
+        ✨ {{ _('All') }}
       </button>
       {% for cat in cats %}
       <button onclick="filterCat('{{ cat.id }}', this)"
@@ -197,11 +320,27 @@
       {% endfor %}
     </nav>
 
+    {% if channel_names %}
+    <nav class="flex gap-2 px-8 pt-1 pb-2 shrink-0 flex-wrap items-center">
+      <button onclick="filterChannel('all', this)"
+              class="chan-btn active rounded-2xl px-4 py-1.5 text-xs font-black text-white bg-white/10">
+        📺 {{ _('All channels') }}
+      </button>
+      {% for ch in channel_names %}
+      <button onclick="filterChannel('{{ ch | e }}', this)"
+              class="chan-btn rounded-2xl px-4 py-1.5 text-xs font-black text-white/70">
+        {{ ch }}
+      </button>
+      {% endfor %}
+    </nav>
+    {% endif %}
+
     <main class="flex-1 grid gap-4 px-8 py-5 content-start
                  grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 overflow-y-auto">
       {% for video in videos %}
       <button class="video-card group text-left"
               data-cat-id="{{ video.category_id }}"
+              data-channel="{{ video.channel_name | e if video.channel_name else '' }}"
               onclick="watchVideo({{ child.id }}, {{ video.id }},
                        '{{ video.embed_url }}', '{{ video.title | e }}')">
         <div class="relative rounded-2xl overflow-hidden">
@@ -225,7 +364,7 @@
       {% if videos | length == 0 %}
       <div class="col-span-full flex flex-col items-center justify-center gap-4 py-20 text-white/30">
         <span class="text-6xl">📺</span>
-        <p class="text-lg font-bold">Zatím žádná videa — rodič je přidá v panelu</p>
+        <p class="text-lg font-bold">{{ _('No videos yet — parent adds them in the panel') }}</p>
       </div>
       {% endif %}
     </main>
@@ -234,7 +373,7 @@
   <!-- ═══════════════ SECTION: chores ═══════════════ -->
   <section id="section-chores" class="section flex-col">
     <div class="px-8 pt-4 pb-2 shrink-0">
-      <p class="text-sm text-white/40 font-bold">Splni úkol → získej body ⭐</p>
+      <p class="text-sm text-white/40 font-bold">{{ _('Complete a task → earn points ⭐') }}</p>
     </div>
     <div id="chore-calendar"
          class="flex-1 flex gap-2 px-8 pb-6 pt-2 overflow-x-auto">
@@ -242,23 +381,167 @@
     </div>
   </section>
 
+  <!-- ═══════════════ SECTION: shop ═══════════════ -->
+  <section id="section-shop" class="section flex-col">
+    <div class="px-8 pt-4 pb-3 shrink-0">
+      <p class="text-sm text-white/40 font-bold">{{ _('Spend stars on real-world rewards 🎁') }}</p>
+    </div>
+
+    <!-- Insufficient points overlay for shop -->
+    <div id="shop-no-points"
+         style="display:none;"
+         class="fixed inset-0 z-50 flex flex-col items-center justify-center
+                bg-slate-950/95 backdrop-blur-sm px-8">
+      <div class="text-8xl mb-6 select-none">💔</div>
+      <h2 class="text-3xl font-black text-white mb-3 text-center">{{ _('Not enough stars!') }}</h2>
+      <p id="shop-no-points-msg" class="text-white/60 text-center max-w-sm mb-8 text-lg"></p>
+      <button onclick="document.getElementById('shop-no-points').style.display='none'"
+              class="rounded-2xl bg-slate-800 hover:bg-slate-700 px-10 py-4 text-xl
+                     font-black text-white transition active:scale-95">
+        OK
+      </button>
+    </div>
+
+    <!-- Bought confirmation overlay -->
+    <div id="shop-bought"
+         style="display:none;"
+         class="fixed inset-0 z-50 flex flex-col items-center justify-center
+                bg-slate-950/95 backdrop-blur-sm px-8">
+      <div id="shop-bought-icon" class="text-9xl mb-6 select-none animate-bounce">🎁</div>
+      <h2 class="text-3xl font-black text-white mb-3 text-center">{{ _('Purchased!') }}</h2>
+      <p id="shop-bought-msg" class="text-white/60 text-center max-w-sm mb-2 text-lg"></p>
+      <p class="text-white/40 text-sm mb-8">{{ _('Tell your parent to fulfil it 😊') }}</p>
+      <button onclick="document.getElementById('shop-bought').style.display='none'"
+              class="rounded-2xl bg-amber-500 hover:bg-amber-400 px-10 py-4 text-xl
+                     font-black text-slate-950 transition active:scale-95">
+        Super! 🎉
+      </button>
+    </div>
+
+    {% if shop_rewards %}
+    <div class="flex-1 grid gap-4 px-8 pb-6
+                grid-cols-2 sm:grid-cols-3 md:grid-cols-4 content-start overflow-y-auto">
+      {% for r in shop_rewards %}
+      <div class="rounded-3xl border border-white/10 bg-white/5 p-5 flex flex-col items-center
+                  gap-3 text-center transition hover:bg-white/10 active:scale-95 cursor-pointer"
+           onclick="buyReward({{ r.id }}, '{{ r.name | e }}', '{{ r.icon }}', {{ r.cost_points }})">
+        <span class="text-6xl select-none">{{ r.icon }}</span>
+        <div>
+          <p class="font-black text-white text-base leading-tight">{{ r.name }}</p>
+          {% if r.description %}
+          <p class="text-xs text-white/40 mt-1 leading-tight">{{ r.description }}</p>
+          {% endif %}
+        </div>
+        <div class="mt-auto rounded-2xl bg-yellow-400/10 border border-yellow-400/30
+                    px-4 py-1.5 text-yellow-400 font-black text-lg">
+          {{ r.cost_points }} ⭐
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex-1 flex flex-col items-center justify-center gap-4 text-white/20">
+      <span class="text-6xl">🛒</span>
+      <p class="text-lg font-bold">{{ _('Shop is empty — parent adds rewards') }}</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ═══════════════ SECTION: achievements ═══════════════ -->
+  <section id="section-achievements" class="section flex-col">
+    <div class="px-8 pt-4 pb-3 shrink-0">
+      <p class="text-sm text-white/40 font-bold">{{ _('Collect badges for completed challenges ✨') }}</p>
+    </div>
+    <div class="flex-1 grid gap-4 px-8 pb-6 grid-cols-2 sm:grid-cols-3 content-start overflow-y-auto">
+      {% for ach in achievements %}
+      <div class="rounded-3xl border p-5 flex flex-col items-center gap-2 text-center
+                  {% if ach.earned %}border-yellow-500/40 bg-yellow-500/10
+                  {% else %}border-white/5 bg-white/3 opacity-40{% endif %}">
+        <span class="text-5xl select-none {% if not ach.earned %}grayscale{% endif %}">{{ ach.icon }}</span>
+        <div>
+          <p class="font-black text-white text-sm leading-tight">{{ ach.name }}</p>
+          <p class="text-xs text-white/40 mt-1">{{ ach.desc }}</p>
+        </div>
+        {% if ach.points > 0 %}
+        <div class="text-xs font-black text-yellow-400">+{{ ach.points }} ⭐</div>
+        {% endif %}
+        {% if ach.earned %}
+        <div class="text-xs text-yellow-500/70 font-bold">✓ {{ _('Earned') }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ═══════════════ SECTION: history ═══════════════ -->
+  <section id="section-history" class="section flex-col">
+    <div class="px-8 pt-4 pb-3 shrink-0">
+      <p class="text-sm text-white/40 font-bold">{{ _('Last 30 star transactions') }}</p>
+    </div>
+    {% if transactions %}
+    <div class="flex-1 overflow-y-auto px-8 pb-6 space-y-2">
+      {% for tx in transactions %}
+      <div class="flex items-center gap-4 rounded-2xl border border-white/8 bg-white/4 px-5 py-3">
+        <span class="text-2xl shrink-0 select-none">
+          {% if tx.delta > 0 %}⭐{% elif 'Obchod' in tx.reason %}🛒{% elif 'Hra' in tx.reason %}🎮{% else %}📺{% endif %}
+        </span>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-white text-sm truncate">{{ tx.reason }}</p>
+          <p class="text-xs text-white/30 mt-0.5">
+            {{ tx.created_at.strftime('%d.%m. %H:%M') }}
+          </p>
+        </div>
+        <span class="font-black text-lg shrink-0
+                     {{ 'text-emerald-400' if tx.delta > 0 else 'text-red-400' }}">
+          {{ '+' if tx.delta > 0 else '' }}{{ tx.delta }} ⭐
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex-1 flex flex-col items-center justify-center gap-4 text-white/20">
+      <span class="text-6xl">📊</span>
+      <p class="text-lg font-bold">{{ _('No transactions yet') }}</p>
+    </div>
+    {% endif %}
+  </section>
+
 </div><!-- /relative -->
 
 <script>
 // ── Data from server ───────────────────────────────────────────────────────
-const CHILD_ID   = {{ child.id }};
-const CHORES     = {{ chores_json | safe }};
-const DONE_TODAY = {{ done_today_json | safe }};
-const SCHEDULES  = {{ schedules_json | safe }};
-const TODAY_WD   = {{ today_wd }};  // 0=Mon, 6=Sun
+const CHILD_ID      = {{ child.id }};
+const CHORES        = {{ chores_json | safe }};
+const DONE_TODAY    = {{ done_today_json | safe }};
+const SCHEDULES     = {{ schedules_json | safe }};
+const TODAY_WD      = {{ today_wd }};
+const DAILY_LIMIT   = {{ child.daily_video_limit }};
+let   watchedToday  = {{ watches_today }};
+
+const LOCALE = {{ ('en-US' if get_locale()|string == 'en' else 'cs-CZ') | tojson }};
+const DAYS   = {{ [_('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat'), _('Sun')] | tojson }};
+const STRINGS = {
+  dailyLimitReached: {{ _('Today you reached the daily limit of {n} videos. See you tomorrow! 🌙') | tojson }},
+  notEnoughPoints:   {{ _('Not enough points!') | tojson }},
+  allDoneToday:      {{ _('All done today ✓') | tojson }},
+  doneToday:         {{ _('Today: {done}/{total} done') | tojson }},
+  weeklyPlan:        {{ _('Weekly plan') | tojson }},
+  choreDone:         {{ _('✓ Done') | tojson }},
+  buyConfirm:        {{ _('Buy reward?\n\n{icon} {name}\n\nPrice: {cost} ⭐') | tojson }},
+  boughtMsg:         {{ _('— cost you {cost} ⭐') | tojson }},
+  notEnoughStars:    {{ _('You have {bal} ⭐, you need {cost} ⭐') | tojson }},
+  connectionError:   {{ _('Connection error') | tojson }},
+  choreConfirm:      {{ _('Did you complete the task?\n\n{icon} {name}\n\nYou get: +{points} ⭐') | tojson }},
+  choreCompleted:    {{ _('+{points} ⭐ {chore} completed! 🎉') | tojson }},
+};
 
 // ── Clock ───────────────────────────────────────────────────────────────────
 const clockEl = document.getElementById('clock');
 const dateEl  = document.getElementById('date');
 function tick() {
   const now = new Date();
-  clockEl.textContent = now.toLocaleTimeString('cs-CZ', {hour:'2-digit', minute:'2-digit'});
-  dateEl.textContent  = now.toLocaleDateString('cs-CZ', {weekday:'long', day:'numeric', month:'long'});
+  clockEl.textContent = now.toLocaleTimeString(LOCALE, {hour:'2-digit', minute:'2-digit'});
+  dateEl.textContent  = now.toLocaleDateString(LOCALE, {weekday:'long', day:'numeric', month:'long'});
 }
 tick(); setInterval(tick, 1000);
 
@@ -274,9 +557,12 @@ for (let i = 0; i < 90; i++) {
 
 // ── Section navigation ──────────────────────────────────────────────────────
 const SUBTITLES = {
-  home: 'Co si dneska dáš?',
-  videos: '🎬 Videa',
-  chores: '📋 Úkoly týdne',
+  home:         {{ _('What to do today?') | tojson }},
+  videos:       {{ ('🎬 ' + _('Videos')) | tojson }},
+  chores:       {{ ('📋 ' + _('Weekly tasks')) | tojson }},
+  shop:         {{ ('🛒 ' + _('Reward shop')) | tojson }},
+  achievements: {{ ('🏆 ' + _('My badges')) | tojson }},
+  history:      {{ ('📊 ' + _('Star history')) | tojson }},
 };
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -286,17 +572,40 @@ function showSection(id) {
   if (id === 'chores') buildCalendar();
 }
 
-// ── Category filter ─────────────────────────────────────────────────────────
-function filterCat(catId, btn) {
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+// ── Video filters ────────────────────────────────────────────────────────────
+let _activeCat = 'all';
+let _activeChan = 'all';
+
+function _applyVideoFilters() {
   document.querySelectorAll('.video-card').forEach(el => {
-    el.style.display = (catId === 'all' || el.dataset.catId == catId) ? '' : 'none';
+    const catOk  = _activeCat  === 'all' || el.dataset.catId  == _activeCat;
+    const chanOk = _activeChan === 'all' || el.dataset.channel === _activeChan;
+    el.style.display = (catOk && chanOk) ? '' : 'none';
   });
 }
 
-// ── Watch video (deduct points) ─────────────────────────────────────────────
+function filterCat(catId, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _activeCat = catId;
+  _applyVideoFilters();
+}
+
+function filterChannel(chan, btn) {
+  document.querySelectorAll('.chan-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _activeChan = chan;
+  _applyVideoFilters();
+}
+
+// ── Watch video (deduct points + daily limit) ───────────────────────────────
 async function watchVideo(childId, videoId, embedUrl, title) {
+  if (DAILY_LIMIT > 0 && watchedToday >= DAILY_LIMIT) {
+    document.getElementById('no-points-msg').textContent =
+      STRINGS.dailyLimitReached.replace('{n}', DAILY_LIMIT);
+    document.getElementById('no-points-overlay').style.display = 'flex';
+    return;
+  }
   try {
     const resp = await fetch('/api/kiosk/watch', {
       method: 'POST',
@@ -306,10 +615,15 @@ async function watchVideo(childId, videoId, embedUrl, title) {
     const data = await resp.json();
     if (data.ok) {
       document.getElementById('points-display').textContent = data.new_balance;
+      if (data.watched_today !== undefined) {
+        watchedToday = data.watched_today;
+        const el = document.getElementById('watch-counter');
+        if (el) el.textContent = `${watchedToday}/${DAILY_LIMIT}`;
+      }
       openTile(embedUrl, title);
     } else {
       document.getElementById('no-points-msg').textContent =
-        data.message || 'Nemáš dost bodů!';
+        data.message || STRINGS.notEnoughPoints;
       document.getElementById('no-points-overlay').style.display = 'flex';
     }
   } catch {
@@ -318,7 +632,6 @@ async function watchVideo(childId, videoId, embedUrl, title) {
 }
 
 // ── Chore calendar ──────────────────────────────────────────────────────────
-const DAYS_CS = ['Po','Út','St','Čt','Pá','So','Ne'];
 
 function buildCalendar() {
   const cal = document.getElementById('chore-calendar');
@@ -343,7 +656,7 @@ function buildCalendar() {
     // Header
     const hdr = document.createElement('div');
     hdr.className = 'col-header text-center font-black text-sm pb-1 border-b border-white/10';
-    hdr.innerHTML = `${DAYS_CS[i]}<br><span class="text-xs font-bold opacity-60">${d.getDate()}.</span>`;
+    hdr.innerHTML = `${DAYS[i]}<br><span class="text-xs font-bold opacity-60">${d.getDate()}.</span>`;
     col.appendChild(hdr);
 
     // Column stripe
@@ -373,10 +686,10 @@ function buildCalendar() {
   const summary = document.getElementById('chores-summary');
   if (todayChores > 0) {
     summary.textContent = todayDone === todayChores
-      ? `Dnes vše splněno ✓`
-      : `Dnes: ${todayDone}/${todayChores} splněno`;
+      ? STRINGS.allDoneToday
+      : STRINGS.doneToday.replace('{done}', todayDone).replace('{total}', todayChores);
   } else {
-    summary.textContent = 'Týdenní plán';
+    summary.textContent = STRINGS.weeklyPlan;
   }
 }
 
@@ -394,7 +707,7 @@ function buildChoreCard(chore, isToday, isPast) {
     `<div class="text-2xl select-none">${chore.icon}</div>` +
     `<div class="text-xs font-bold leading-tight ${isDone ? 'text-emerald-300' : 'text-white/80'}">${chore.name}</div>` +
     `<div class="text-xs font-black ${isDone ? 'text-emerald-400' : 'text-yellow-400'}">` +
-      (isDone ? '✓ Hotovo' : `+${chore.points}⭐`) +
+      (isDone ? STRINGS.choreDone : `+${chore.points}⭐`) +
     `</div>`;
 
   if (isToday && !isDone) {
@@ -403,8 +716,35 @@ function buildChoreCard(chore, isToday, isPast) {
   return card;
 }
 
+async function buyReward(rewardId, name, icon, cost) {
+  if (!confirm(STRINGS.buyConfirm.replace('{icon}', icon).replace('{name}', name).replace('{cost}', cost))) return;
+  try {
+    const resp = await fetch('/api/shop/buy', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({child_id: CHILD_ID, reward_id: rewardId}),
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      document.getElementById('points-display').textContent = data.new_balance;
+      document.getElementById('shop-bought-icon').textContent = data.reward_icon;
+      document.getElementById('shop-bought-msg').textContent =
+        `${data.reward_name} ` + STRINGS.boughtMsg.replace('{cost}', data.cost);
+      document.getElementById('shop-bought').style.display = 'flex';
+      queueAchievements(data.new_achievements);
+    } else {
+      const bal = data.balance ?? '?';
+      document.getElementById('shop-no-points-msg').textContent =
+        STRINGS.notEnoughStars.replace('{bal}', bal).replace('{cost}', data.cost);
+      document.getElementById('shop-no-points').style.display = 'flex';
+    }
+  } catch {
+    alert(STRINGS.connectionError);
+  }
+}
+
 async function confirmChore(chore) {
-  if (!confirm(`Splnil jsi úkol?\n\n${chore.icon} ${chore.name}\n\nZískaš: +${chore.points} ⭐`)) return;
+  if (!confirm(STRINGS.choreConfirm.replace('{icon}', chore.icon).replace('{name}', chore.name).replace('{points}', chore.points))) return;
   try {
     const resp = await fetch('/api/kiosk/chore/complete', {
       method: 'POST',
@@ -416,12 +756,13 @@ async function confirmChore(chore) {
       DONE_TODAY.push(chore.id);
       document.getElementById('points-display').textContent = data.new_balance;
       buildCalendar();
-      showToast(`+${data.awarded} ⭐ ${data.chore_name} splněno! 🎉`);
+      showToast(STRINGS.choreCompleted.replace('{points}', data.awarded).replace('{chore}', data.chore_name));
+      queueAchievements(data.new_achievements);
     } else {
       showToast(data.message || 'Chyba', true);
     }
   } catch {
-    showToast('Chyba připojení', true);
+    showToast(STRINGS.connectionError, true);
   }
 }
 
@@ -485,6 +826,64 @@ setInterval(updateCountdown, 1000);
 
 // Initial calendar summary on home
 buildCalendar();
+
+// ── Achievement popup ───────────────────────────────────────────────────────
+let _achQueue = [];
+
+function dismissAchievement() {
+  document.getElementById('ach-overlay').style.display = 'none';
+  _achQueue.shift();
+  if (_achQueue.length > 0) showNextAchievement();
+}
+
+function showNextAchievement() {
+  const a = _achQueue[0];
+  if (!a) return;
+  document.getElementById('ach-icon').textContent   = a.icon;
+  document.getElementById('ach-name').textContent   = a.name;
+  document.getElementById('ach-desc').textContent   = a.desc;
+  document.getElementById('ach-points').textContent = a.points > 0 ? `+${a.points} ⭐ bonus!` : '';
+  document.getElementById('ach-overlay').style.display = 'flex';
+}
+
+function queueAchievements(list) {
+  if (!list || list.length === 0) return;
+  const wasEmpty = _achQueue.length === 0;
+  _achQueue.push(...list);
+  if (wasEmpty) showNextAchievement();
+}
+
+// ── Parent messages polling ─────────────────────────────────────────────────
+let _msgQueue = [];
+
+function dismissMessage() {
+  document.getElementById('msg-overlay').style.display = 'none';
+  _msgQueue.shift();
+  if (_msgQueue.length > 0) showNextMessage();
+}
+
+function showNextMessage() {
+  const m = _msgQueue[0];
+  if (!m) return;
+  document.getElementById('msg-icon').textContent = m.icon;
+  document.getElementById('msg-text').textContent = m.text;
+  document.getElementById('msg-overlay').style.display = 'flex';
+}
+
+async function pollInbox() {
+  try {
+    const r = await fetch(`/api/child/${CHILD_ID}/inbox`);
+    const d = await r.json();
+    if (d.messages && d.messages.length > 0) {
+      const wasEmpty = _msgQueue.length === 0;
+      _msgQueue.push(...d.messages);
+      if (wasEmpty) showNextMessage();
+    }
+  } catch {}
+}
+
+pollInbox();
+setInterval(pollInbox, 30000);
 </script>
 </body>
 </html>

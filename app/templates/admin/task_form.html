@@ -1,22 +1,21 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ 'Upravit' if task else 'Nový' }} úkol — Rodičovský panel</title>
+  <title>{% if task %}{{ _('Edit task') }}{% else %}{{ _('New task') }}{% endif %} — {{ _('Parent Panel') }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>body { font-family: system-ui, sans-serif; }</style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
 
   {% include 'admin/_admin_nav.html' %}
 
   <main class="max-w-lg mx-auto px-6 py-8">
     <div class="mb-6">
-      <a href="/admin/tasks" class="text-slate-400 hover:text-white transition text-sm">← Zpět</a>
+      <a href="/admin/tasks" class="text-slate-400 hover:text-white transition text-sm">← {{ _('Back') }}</a>
       <h1 class="text-xl font-black text-white mt-2">
-        {{ 'Upravit úkol' if task else 'Nový úkol' }}
+        {% if task %}{{ _('Edit task') }}{% else %}{{ _('New task') }}{% endif %}
       </h1>
     </div>
 
@@ -26,7 +25,7 @@
       <span id="preview-icon" class="text-4xl select-none">{{ task.icon if task else '⭐' }}</span>
       <div>
         <p class="font-black text-white text-lg" id="preview-name">
-          {{ task.name if task else 'Název úkolu' }}
+          {{ task.name if task else _('Task name') }}
         </p>
         <p class="text-yellow-400 font-black text-sm" id="preview-points">
           +{{ task.points_value if task else 10 }} ⭐
@@ -38,17 +37,17 @@
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Název</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Name') }}</label>
           <input type="text" name="name" required maxlength="120"
                  value="{{ task.name if task else '' }}"
-                 placeholder="Uklid pokoj"
-                 oninput="document.getElementById('preview-name').textContent=this.value||'Název úkolu'"
+                 placeholder="{{ _('Clean room') }}"
+                 oninput="document.getElementById('preview-name').textContent=this.value||'{{ _('Task name') }}'"
                  class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                         placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
                         focus:ring-1 focus:ring-indigo-500 transition" />
         </div>
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Icon') }}</label>
           <input type="text" name="icon" maxlength="4"
                  value="{{ task.icon if task else '⭐' }}"
                  oninput="document.getElementById('preview-icon').textContent=this.value||'⭐'"
@@ -60,7 +59,7 @@
 
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Body za splnění</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Points for completion') }}</label>
           <input type="number" name="points_value" min="1" max="9999" required
                  value="{{ task.points_value if task else 10 }}"
                  oninput="document.getElementById('preview-points').textContent='+' + (this.value||0) + ' ⭐'"
@@ -68,7 +67,7 @@
                         focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
         </div>
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Pořadí</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Order') }}</label>
           <input type="number" name="sort_order" min="0" max="999"
                  value="{{ task.sort_order if task else 0 }}"
                  class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
@@ -80,12 +79,12 @@
         <button type="submit"
                 class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
                        text-white transition active:scale-95">
-          {{ 'Uložit' if task else 'Vytvořit úkol' }}
+          {% if task %}{{ _('Save') }}{% else %}{{ _('Create task') }}{% endif %}
         </button>
         <a href="/admin/tasks"
            class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
                   hover:border-slate-500 hover:text-white transition">
-          Zrušit
+          {{ _('Cancel') }}
         </a>
       </div>
     </form>

@@ -1,0 +1,1010 @@
+# Czech translations for Nexusys Junior
+# Copyright (C) 2026 Nexusys Junior Contributors
+msgid ""
+msgstr ""
+"Project-Id-Version: Nexusys Junior\n"
+"POT-Creation-Date: 2026-06-23 00:00\n"
+"PO-Revision-Date: 2026-06-23 00:00\n"
+"Last-Translator: \n"
+"Language: cs\n"
+"Language-Team: Czech\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+msgid "Content"
+msgstr "Obsah"
+
+msgid "Tiles"
+msgstr "Dlaždice"
+
+msgid "Videos"
+msgstr "Videa"
+
+msgid "Family"
+msgstr "Rodina"
+
+msgid "Children"
+msgstr "Děti"
+
+msgid "Tasks"
+msgstr "Úkoly"
+
+msgid "Shop"
+msgstr "Obchod"
+
+msgid "Reports"
+msgstr "Přehledy"
+
+msgid "Statistics"
+msgstr "Statistiky"
+
+msgid "Back to kiosk"
+msgstr "Zpět na kiosek"
+
+msgid "Sign out"
+msgstr "Odhlásit"
+
+msgid "Parent Panel"
+msgstr "Rodičovský panel"
+
+msgid "Enter the parent password to continue"
+msgstr "Zadej rodičovské heslo pro vstup"
+
+msgid "Password"
+msgstr "Heslo"
+
+msgid "Sign in"
+msgstr "Vstoupit"
+
+msgid "Wrong password"
+msgstr "Špatné heslo"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Child"
+msgstr "Dítě"
+
+msgid "Active videos"
+msgstr "Aktivních videí"
+
+msgid "Shop rewards"
+msgstr "Odměn v obchodě"
+
+msgid "Tasks done today"
+msgstr "Úkolů splněno dnes"
+
+msgid "Today"
+msgstr "Dnes"
+
+msgid "tasks"
+msgstr "úkolů"
+
+msgid "videos today"
+msgstr "× video dnes"
+
+msgid "No children yet."
+msgstr "Zatím žádné děti."
+
+msgid "Add child"
+msgstr "Přidat dítě"
+
+msgid "Recent activity"
+msgstr "Poslední aktivita"
+
+msgid "All statistics"
+msgstr "Všechny statistiky"
+
+msgid "Send message to kiosk"
+msgstr "Poslat zprávu do kiosku"
+
+msgid "Message for %(name)s…"
+msgstr "Zpráva pro %(name)s…"
+
+msgid "Send"
+msgstr "Odeslat"
+
+msgid "Kiosk settings"
+msgstr "Nastavení kiosku"
+
+msgid "Video & playlist management"
+msgstr "Správa videí a playlistů"
+
+msgid "Home screen icons"
+msgstr "Ikony na hlavní stránce"
+
+msgid "Task & reward templates"
+msgstr "Šablony úkolů a odměn"
+
+msgid "Star rewards"
+msgstr "Odměny za hvězdičky"
+
+msgid "Add first child"
+msgstr "Přidat první dítě"
+
+msgid "No children yet"
+msgstr "Zatím žádné dítě"
+
+msgid "No tasks yet —"
+msgstr "Zatím žádné úkoly —"
+
+msgid "add your first task"
+msgstr "přidej první úkol"
+
+msgid "for quick rewards"
+msgstr "pro rychlé odměňování"
+
+msgid "Detail"
+msgstr "Detail"
+
+msgid "Kiosk"
+msgstr "Kiosek"
+
+msgid "Delete"
+msgstr "Smazat"
+
+msgid "Delete %(name)s? This will also delete all points and history."
+msgstr "Smazat %(name)s? Tím smažeš i všechny body a historii."
+
+msgid "points"
+msgstr "bodů"
+
+msgid "Edit child"
+msgstr "Upravit dítě"
+
+msgid "New child"
+msgstr "Nové dítě"
+
+msgid "Back"
+msgstr "Zpět"
+
+msgid "Child name"
+msgstr "Jméno dítěte"
+
+msgid "Avatar preview"
+msgstr "Náhled avataru"
+
+msgid "Name"
+msgstr "Jméno"
+
+msgid "Avatar icon"
+msgstr "Ikona avataru"
+
+msgid "Avatar colour"
+msgstr "Barva avataru"
+
+msgid "Starting points"
+msgstr "Počáteční body"
+
+msgid "Video price (points)"
+msgstr "Cena 1 videa (body)"
+
+msgid "Daily video limit"
+msgstr "Denní limit videí"
+
+msgid "no limit"
+msgstr "bez limitu"
+
+msgid "Save"
+msgstr "Uložit"
+
+msgid "Create"
+msgstr "Vytvořit"
+
+msgid "Cancel"
+msgstr "Zrušit"
+
+msgid "Edit"
+msgstr "Upravit"
+
+msgid "points remaining"
+msgstr "bodů zbývá"
+
+msgid "videos"
+msgstr "videí"
+
+msgid "Add points manually"
+msgstr "Přidat body ručně"
+
+msgid "Points"
+msgstr "Body"
+
+msgid "Reason (optional)"
+msgstr "Důvod (nepovinné)"
+
+msgid "Add"
+msgstr "Přidat"
+
+msgid "Quick task rewards"
+msgstr "Rychlé odměny za úkoly"
+
+msgid "No tasks —"
+msgstr "Žádné úkoly —"
+
+msgid "add tasks"
+msgstr "přidej úkoly"
+
+msgid "for quick rewards."
+msgstr "pro rychlé odměňování."
+
+msgid "Devices"
+msgstr "Zařízení"
+
+msgid "Add device"
+msgstr "Přidat zařízení"
+
+msgid "No devices —"
+msgstr "Žádné zařízení —"
+
+msgid "add a device"
+msgstr "přidej zařízení"
+
+msgid "for device policy API."
+msgstr "pro device policy API."
+
+msgid "Allowed"
+msgstr "Povoleno"
+
+msgid "Blocked"
+msgstr "Blokováno"
+
+msgid "Delete device?"
+msgstr "Smazat zařízení?"
+
+msgid "Weekly tasks"
+msgstr "Týdenní úkoly"
+
+msgid "Add task"
+msgstr "Přidat úkol"
+
+msgid "No chores —"
+msgstr "Žádné úkoly —"
+
+msgid "add first weekly chore"
+msgstr "přidej první týdenní úkol"
+
+msgid "and the child can complete it from the kiosk."
+msgstr "a dítě si ho splní z kiosku."
+
+msgid "Time locks"
+msgstr "Časové zámky"
+
+msgid "Add lock"
+msgstr "Přidat zámek"
+
+msgid "Every day"
+msgstr "Každý den"
+
+msgid "Delete time lock?"
+msgstr "Smazat časový zámek?"
+
+msgid "No time locks — kiosk is always accessible."
+msgstr "Žádné časové zámky — kiosek je kdykoli dostupný."
+
+msgid "Active goal"
+msgstr "Aktivní cíl"
+
+msgid "Change goal"
+msgstr "Změnit cíl"
+
+msgid "Set new goal"
+msgstr "Nastavit nový cíl"
+
+msgid "Goal name"
+msgstr "Název cíle"
+
+msgid "Or choose from shop"
+msgstr "Nebo vyber z obchodu"
+
+msgid "Points history"
+msgstr "Historie bodů"
+
+msgid "last 20"
+msgstr "posledních 20"
+
+msgid "No transactions"
+msgstr "Žádné transakce"
+
+msgid "Edit chore"
+msgstr "Upravit úkol"
+
+msgid "New chore"
+msgstr "Nový úkol"
+
+msgid "Icon"
+msgstr "Ikona"
+
+msgid "Points for completion"
+msgstr "Body za splnění"
+
+msgid "Chore name"
+msgstr "Název úkolu"
+
+msgid "Clean room"
+msgstr "Uklidit pokoj"
+
+msgid "Day of week"
+msgstr "Den v týdnu"
+
+msgid "Add chore"
+msgstr "Přidat úkol"
+
+msgid "Edit device"
+msgstr "Upravit zařízení"
+
+msgid "New device"
+msgstr "Nové zařízení"
+
+msgid "Back to %(name)s"
+msgstr "Zpět na %(name)s"
+
+msgid "Device name"
+msgstr "Název zařízení"
+
+msgid "Device key"
+msgstr "Device klíč"
+
+msgid "This key is entered on the device in the"
+msgstr "Tento klíč zadáš v zařízení do parametru"
+
+msgid "parameter for the device policy API."
+msgstr "pro device policy API."
+
+msgid "Device allowed (can launch kiosk)"
+msgstr "Zařízení povoleno (může spustit kiosek)"
+
+msgid "Message when blocked"
+msgstr "Zpráva při blokování"
+
+msgid "optional"
+msgstr "nepovinné"
+
+msgid "Done for today. Ask dad."
+msgstr "Dneska hotovo. Zeptej se táty."
+
+msgid "Shown to the child (and in device policy API) when device is blocked."
+msgstr "Zobrazí se dítěti (a v device policy API), když je zařízení blokováno."
+
+msgid "Reward shop"
+msgstr "Obchod s odměnami"
+
+msgid "Rewards kids can buy with earned stars."
+msgstr "Odměny které si děti mohou koupit za nasbírané hvězdičky."
+
+msgid "New reward"
+msgstr "Nová odměna"
+
+msgid "Active"
+msgstr "Aktivní"
+
+msgid "Hidden"
+msgstr "Skrytá"
+
+msgid "Delete reward?"
+msgstr "Smazat odměnu?"
+
+msgid "No rewards yet"
+msgstr "Zatím žádné odměny"
+
+msgid "Add rewards kids can buy with stars — e.g. \"30 min extra tablet\", \"Choose dinner\", \"Later bedtime\"."
+msgstr "Přidej odměny které si dítě může koupit za hvězdičky — např. „30 min tabletu navíc", „Výběr večeře", „Pozdější spánek"."
+
+msgid "Add first reward"
+msgstr "Přidat první odměnu"
+
+msgid "Edit reward"
+msgstr "Upravit odměnu"
+
+msgid "Reward name"
+msgstr "Název odměny"
+
+msgid "Emoji icon"
+msgstr "Emoji ikona"
+
+msgid "Description"
+msgstr "Popis"
+
+msgid "30 min extra tablet time"
+msgstr "30 min tabletu navíc"
+
+msgid "e.g. valid for one day, parent must approve"
+msgstr "např. platí jeden den, musí souhlasit rodič"
+
+msgid "Price in stars"
+msgstr "Cena v hvězdičkách"
+
+msgid "Order"
+msgstr "Pořadí"
+
+msgid "Add reward"
+msgstr "Přidat odměnu"
+
+msgid "Reward tasks"
+msgstr "Odměnové úkoly"
+
+msgid "Clicking a task in child detail instantly awards points."
+msgstr "Kliknutím na úkol v detailu dítěte okamžitě přidáš body."
+
+msgid "order"
+msgstr "pořadí"
+
+msgid "Tasks let you quickly reward a child with points by clicking a button in their profile."
+msgstr "Úkoly ti umožní rychle odměnit dítě body kliknutím na tlačítko v jeho profilu."
+
+msgid "Add first task"
+msgstr "Přidat první úkol"
+
+msgid "No tasks yet"
+msgstr "Zatím žádné úkoly"
+
+msgid "Edit task"
+msgstr "Upravit úkol"
+
+msgid "New task"
+msgstr "Nový úkol"
+
+msgid "Task name"
+msgstr "Název úkolu"
+
+msgid "Delete task?"
+msgstr "Smazat úkol?"
+
+msgid "Create task"
+msgstr "Vytvořit úkol"
+
+msgid "Kiosk tiles"
+msgstr "Dlaždice kiosku"
+
+msgid "Add tile"
+msgstr "Přidat dlaždici"
+
+msgid "Hide"
+msgstr "Skrýt"
+
+msgid "Show"
+msgstr "Zobrazit"
+
+msgid "Delete tile?"
+msgstr "Smazat dlaždici?"
+
+msgid "No tiles yet"
+msgstr "Zatím žádné dlaždice"
+
+msgid "Add first tile"
+msgstr "Přidat první dlaždici"
+
+msgid "Edit tile"
+msgstr "Upravit dlaždici"
+
+msgid "New tile"
+msgstr "Nová dlaždice"
+
+msgid "Preview"
+msgstr "Náhled"
+
+msgid "Preview updates in real time."
+msgstr "Náhled se aktualizuje živě při editaci."
+
+msgid "Letters"
+msgstr "Písmenka"
+
+msgid "URL"
+msgstr "URL adresa"
+
+msgid "or"
+msgstr "nebo"
+
+msgid "Icon (emoji)"
+msgstr "Ikona (emoji)"
+
+msgid "Category"
+msgstr "Kategorie"
+
+msgid "Tile colour"
+msgstr "Barva dlaždice"
+
+msgid "lower number = first"
+msgstr "nižší číslo = dříve"
+
+msgid "Save changes"
+msgstr "Uložit změny"
+
+msgid "Video management"
+msgstr "Správa videí"
+
+msgid "Imported %(n)s videos"
+msgstr "Importováno %(n)s videí"
+
+msgid "skipped (duplicates)"
+msgstr "přeskočeno (duplikáty)"
+
+msgid "errors"
+msgstr "chyb"
+
+msgid "YouTube API key not configured. Add"
+msgstr "Není nastaven YouTube API klíč. Přidej"
+
+msgid "to your"
+msgstr "do souboru"
+
+msgid "file and restart the container."
+msgstr "a restartuj kontejner."
+
+msgid "Get API key"
+msgstr "Získat API klíč"
+
+msgid "Could not parse playlist ID from URL. Check the link."
+msgstr "Nepodařilo se rozpoznat ID playlistu z URL. Zkontroluj odkaz."
+
+msgid "Import error — check your API key and playlist URL."
+msgstr "Chyba při importu — zkontroluj platnost API klíče a URL playlistu."
+
+msgid "Add video"
+msgstr "Přidat video"
+
+msgid "New category"
+msgstr "Nová kategorie"
+
+msgid "Import playlist"
+msgstr "Import playlistu"
+
+msgid "Import YouTube playlist"
+msgstr "Import YouTube playlistu"
+
+msgid "Paste a playlist URL — the system will automatically fetch titles, thumbnails and channel names for each video. Duplicates are skipped."
+msgstr "Vlož URL playlistu — systém automaticky stáhne názvy, thumbnaily a jméno kanálu pro každé video. Duplikáty jsou přeskočeny."
+
+msgid "Playlist URL"
+msgstr "URL playlistu"
+
+msgid "Price"
+msgstr "Cena"
+
+msgid "empty = child default"
+msgstr "prázdné = výchozí dítěte"
+
+msgid "Default"
+msgstr "Výchozí"
+
+msgid "Import"
+msgstr "Importovat"
+
+msgid "active"
+msgstr "aktivních"
+
+msgid "total"
+msgstr "celkem"
+
+msgid "Delete category and all its videos?"
+msgstr "Smazat kategorii i s videi?"
+
+msgid "No videos —"
+msgstr "Žádná videa —"
+
+msgid "add first"
+msgstr "přidej první"
+
+msgid "Create a category first"
+msgstr "Nejdřív vytvoř kategorii"
+
+msgid "Delete video?"
+msgstr "Smazat video?"
+
+msgid "Edit video"
+msgstr "Upravit video"
+
+msgid "YouTube URL or ID"
+msgstr "YouTube URL nebo ID"
+
+msgid "Works: youtube.com/watch?v=… · youtu.be/… · direct ID (11 chars)"
+msgstr "Funguje: youtube.com/watch?v=… · youtu.be/… · přímo ID (11 znaků)"
+
+msgid "Video title"
+msgstr "Název videa"
+
+msgid "Little Red Riding Hood"
+msgstr "Pohádka o Červené Karkulce"
+
+msgid "Channel / YouTuber"
+msgstr "Kanál / Youtuber"
+
+msgid "optional, used for filtering in kiosk"
+msgstr "volitelné, pro filtrování v kiosku"
+
+msgid "e.g. MumboJumbo"
+msgstr "např. MumboJumbo"
+
+msgid "empty = uses child setting"
+msgstr "prázdné = použije se nastavení dítěte"
+
+msgid "Child's default price"
+msgstr "Výchozí cena dítěte"
+
+msgid "Time discounts"
+msgstr "Časové slevy"
+
+msgid "price at given time (e.g. free 19:00–20:30)"
+msgstr "cena v daný čas (např. pohádka zdarma 19:00–20:30)"
+
+msgid "Edit category"
+msgstr "Upravit kategorii"
+
+msgid "Category preview"
+msgstr "Náhled kategorie"
+
+msgid "Fairy tales"
+msgstr "Pohádky"
+
+msgid "Colour"
+msgstr "Barva"
+
+msgid "Create category"
+msgstr "Vytvořit kategorii"
+
+msgid "New time lock"
+msgstr "Nový časový zámek"
+
+msgid "The kiosk will be locked at the set time. For a lock spanning midnight (e.g. 20:30 → 07:00), set \"from\" greater than \"to\"."
+msgstr "Kiosek bude zamčen v nastaveném čase. Pro noční zámek přes půlnoc (např. 20:30 → 07:00) zadej čas tak, že od je větší než do."
+
+msgid "Lock from"
+msgstr "Zamknout od"
+
+msgid "Unlock at"
+msgstr "Odemknout v"
+
+msgid "Message for child"
+msgstr "Zpráva pro dítě"
+
+msgid "Kiosk is locked now. Time to sleep! 🌙"
+msgstr "Kiosek je teď zamčený. Jdi spát! 🌙"
+
+msgid "Save lock"
+msgstr "Uložit zámek"
+
+msgid "Activity for the last 14 days."
+msgstr "Aktivita za posledních 14 dní."
+
+msgid "Current balance"
+msgstr "Aktuální balance"
+
+msgid "Points earned"
+msgstr "Vydělané body"
+
+msgid "Points spent"
+msgstr "Utracené body"
+
+msgid "Videos watched"
+msgstr "Přehraná videa"
+
+msgid "Tasks completed"
+msgstr "Splněné úkoly"
+
+msgid "Points — earned vs. spent"
+msgstr "Body — vydělané vs. utracené"
+
+msgid "Videos per day"
+msgstr "Přehraná videa za den"
+
+msgid "Tasks per day"
+msgstr "Splněné úkoly za den"
+
+msgid "Where points came from"
+msgstr "Odkud přišly body"
+
+msgid "All time total"
+msgstr "Celkem za všechnu dobu"
+
+msgid "Earned"
+msgstr "Vydělané"
+
+msgid "Spent"
+msgstr "Utracené"
+
+msgid "Add a child first in the Children section."
+msgstr "Nejdříve přidej dítě v sekci Děti."
+
+msgid "Family media kiosk with parental controls"
+msgstr "Rodinný mediální kiosek s rodičovskými prvky"
+
+msgid "Kiosks"
+msgstr "Kiosky"
+
+msgid "Features"
+msgstr "Co umí"
+
+msgid "YouTube playlists, categories, channel filtering"
+msgstr "YouTube playlisty, kategorie, filtrování podle kanálu"
+
+msgid "Games"
+msgstr "Hry"
+
+msgid "Letters and numbers — educational mini-games"
+msgstr "Písmenka a čísla — vzdělávací minihry"
+
+msgid "Earn stars by completing tasks, watching videos costs points"
+msgstr "Odměňování za splněné úkoly, sledování videí stojí body"
+
+msgid "Daily tasks by weekday, points for completion"
+msgstr "Denní úkoly podle dne v týdnu, body za splnění"
+
+msgid "Exchange earned points for real-world rewards"
+msgstr "Výměna nasbíraných bodů za reálné odměny"
+
+msgid "Schedule"
+msgstr "Rozvrh"
+
+msgid "Kiosk time locks — automatic by day and hour"
+msgstr "Časové zámky kiosku — automaticky podle dne a hodiny"
+
+msgid "Not enough points!"
+msgstr "Nemáš dost bodů!"
+
+msgid "Earn points by completing tasks."
+msgstr "Vydělej si body splněním úkolů."
+
+msgid "Kiosk is locked"
+msgstr "Kiosek je zamčený"
+
+msgid "until unlock"
+msgstr "do odemčení"
+
+msgid "New badge!"
+msgstr "Nový odznak!"
+
+msgid "Message from parent"
+msgstr "Zpráva od rodiče"
+
+msgid "What to do today?"
+msgstr "Co si dneska dáš?"
+
+msgid "video"
+msgstr "video"
+
+msgid "Done!"
+msgstr "Hotovo!"
+
+msgid "videos available"
+msgstr "videí k dispozici"
+
+msgid "Weekly plan"
+msgstr "Týdenní plán"
+
+msgid "Badges"
+msgstr "Odznaky"
+
+msgid "earned"
+msgstr "získáno"
+
+msgid "History"
+msgstr "Historie"
+
+msgid "My stars"
+msgstr "Moje hvězdičky"
+
+msgid "All"
+msgstr "Vše"
+
+msgid "All channels"
+msgstr "Všechny kanály"
+
+msgid "No videos yet — parent adds them in the panel"
+msgstr "Zatím žádná videa — rodič je přidá v panelu"
+
+msgid "Complete a task → earn points ⭐"
+msgstr "Splni úkol → získej body ⭐"
+
+msgid "Spend stars on real-world rewards 🎁"
+msgstr "Utrácej hvězdičky za reálné odměny 🎁"
+
+msgid "Not enough stars!"
+msgstr "Nemáš dost hvězd!"
+
+msgid "Purchased!"
+msgstr "Koupeno!"
+
+msgid "Tell your parent to fulfil it 😊"
+msgstr "Řekni rodičovi, ať ti to splní 😊"
+
+msgid "Shop is empty — parent adds rewards"
+msgstr "Obchod je prázdný — rodič přidá odměny"
+
+msgid "Collect badges for completed challenges ✨"
+msgstr "Sbírej odznaky za splněné výzvy ✨"
+
+msgid "Last 30 star transactions"
+msgstr "Posledních 30 pohybů hvězdiček"
+
+msgid "No transactions yet"
+msgstr "Zatím žádné pohyby"
+
+msgid "Weekly tasks"
+msgstr "Úkoly týdne"
+
+msgid "Reward shop"
+msgstr "Obchod s odměnami"
+
+msgid "My badges"
+msgstr "Moje odznaky"
+
+msgid "Star history"
+msgstr "Historie hvězdiček"
+
+msgid "Education"
+msgstr "Vzdělávání"
+
+msgid "Web"
+msgstr "Web"
+
+msgid "English name"
+msgstr "Anglický název"
+
+msgid "Wrong password, try again."
+msgstr "Špatné heslo, zkus to znovu."
+
+msgid "Download NixOS config"
+msgstr "Stáhnout NixOS config"
+
+msgid "Guide"
+msgstr "Návod"
+
+msgid "User guide"
+msgstr "Návod k použití"
+
+msgid "Everything you need to know about Nexusys Junior."
+msgstr "Vše, co potřebuješ vědět o Nexusys Junior."
+
+msgid "How it works"
+msgstr "Jak to funguje"
+
+msgid "how_it_works_body"
+msgstr "Nexusys Junior je rodinný kioskový systém. Každé dítě má vlastní profil. Kiosek (laptop) běží v uzamčeném Chromiu, které zobrazuje stránku kiosku daného dítěte. Děti získávají hvězdičky ⭐ plněním úkolů. Hvězdičky jsou měna — utrácejí je za sledování videí nebo za odměny v obchodě."
+
+msgid "Tasks → Stars"
+msgstr "Úkoly → Hvězdičky"
+
+msgid "Stars → Videos / Rewards"
+msgstr "Hvězdičky → Videa / Odměny"
+
+msgid "Parent controls everything"
+msgstr "Rodič vše řídí"
+
+msgid "children_step1"
+msgstr "Jdi na Děti → Nové dítě. Nastav jméno, emoji avatara, barvu a cenu videa (hvězdičky za jedno video)."
+
+msgid "children_step2"
+msgstr "URL kiosku dítěte je /kiosk/<id>. Najdeš ji na hlavní stránce po kliknutí na avatar dítěte."
+
+msgid "children_step3"
+msgstr "V detailu dítěte můžeš ručně přidat nebo odebrat hvězdičky, poslat zprávu na kiosek (popup na obrazovce) a spravovat zařízení a rozvrhy."
+
+msgid "Tasks & Chores"
+msgstr "Úkoly a povinnosti"
+
+msgid "Reward tasks"
+msgstr "Úkoly za odměnu"
+
+msgid "reward_tasks_body"
+msgstr "Vytváříš je v sekci Úkoly. Rodič klepne na úkol v detailu dítěte a hvězdičky se připíšou okamžitě. Hodí se na jednorázové věci jako „uklidil pokoj" nebo „pomohl s nádobím"."
+
+msgid "Daily chores"
+msgstr "Denní povinnosti"
+
+msgid "daily_chores_body"
+msgstr "Vytváříš je v Děti → Povinnosti pro konkrétní den v týdnu. Dítě je označí jako splněné přímo v kiosku. Hvězdičky se připíší automaticky. Každý týden se resetují."
+
+msgid "shop_body"
+msgstr "Přidej odměny v sekci Obchod (např. „Extra čas na obrazovce", „Zmrzlina"). Nastav cenu v hvězdičkách. Dítě si odměnu koupí přímo v kiosku — zůstatek se ihned odečte a zobrazí se notifikace. Odměnu splníš v reálném životě."
+
+msgid "videos_step1"
+msgstr "Nejdřív vytvoř kategorie (např. „Pohádky", „Vzdělání"). Každá může mít vlastní ikonu a barvu."
+
+msgid "videos_step2"
+msgstr "Přidej videa přes YouTube URL nebo ID, nebo importuj celý playlist jedním kliknutím. Systém načte názvy automaticky (vyžaduje YouTube API klíč v .env)."
+
+msgid "videos_step3"
+msgstr "Každé video může mít vlastní cenu nebo pravidla přepsání (např. pohádky jsou zdarma od 19:00 do 20:30). Nech prázdné a použije se výchozí cena dítěte."
+
+msgid "tiles_body"
+msgstr "Dlaždice jsou zkratky zobrazené na domovské obrazovce kiosku. Mohou odkazovat na libovolnou URL (externí web, interní hru atd.). Vestavěné dlaždice (Videa, Písmenka, Čísla) jsou vždy zobrazeny. Vlastní dlaždice se zobrazují pod nimi. Můžeš nastavit dvojjazyčný název — kiosek zobrazí správný podle aktivního jazyka."
+
+msgid "Devices & NixOS kiosk"
+msgstr "Zařízení a NixOS kiosek"
+
+msgid "nixos_step1"
+msgstr "V detailu dítěte přidej zařízení s jedinečným klíčem (např. child-laptop). Tento klíč identifikuje laptop vůči serveru."
+
+msgid "nixos_step2"
+msgstr "Klikni na ↓ NixOS vedle zařízení a stáhni předvyplněný soubor .nix. Zkopíruj ho do /etc/nixos/configuration.nix na laptopu a umísti CA certifikát Caddy jako /etc/nixos/caddy-ca.crt."
+
+msgid "nixos_step3"
+msgstr "Spusť nixos-rebuild switch. Laptop nabootuje do uzamčeného kiosku. Agent polluje /api/device-policy?deviceId=… každých 15 sekund a přepíná Chromium na kiosk URL nebo zamykací obrazovku."
+
+msgid "nixos_step4"
+msgstr "Přepni Povoleno / Blokováno u zařízení a okamžitě zamkni nebo odemkni kiosek. Na obrazovce se zobrazí vlastní zpráva."
+
+msgid "Tip:"
+msgstr "Tip:"
+
+msgid "nixos_tip"
+msgstr "Nastav NEXUSYS_PUBLIC_URL=https://tvoje-domena v .env a stažený NixOS config bude automaticky obsahovat správnou adresu serveru."
+
+msgid "Screen time schedules"
+msgstr "Rozvrhy obrazovkového času"
+
+msgid "schedules_body"
+msgstr "V detailu dítěte přidej rozvrhy pro automatické zamknutí kiosku v určitou dobu (např. školní hodiny, čas spánku). Můžeš nastavit konkrétní den nebo každý den. Při zamknutí se zobrazí vlastní zpráva. Kiosek kontroluje rozvrhy na straně klienta každou minutu."
+
+msgid "stats_body"
+msgstr "Stránka Statistiky zobrazuje trend zůstatku hvězdiček, počet shlédnutých videí na dítě, nejpoužívanější dlaždice a míru plnění úkolů za posledních 30 dní. Využij ji ke zjištění, která dítě je nejaktivnější a zda motivační systém funguje."
+
+msgid "Configuration"
+msgstr "Konfigurace"
+
+msgid "Public server URL used in generated NixOS configs."
+msgstr "Veřejná URL serveru vkládaná do generovaných NixOS configů."
+
+msgid "Required for YouTube playlist import and automatic title fetch."
+msgstr "Nutný pro import YouTube playlistů a automatické načítání názvů."
+
+msgid "Flask session secret — change this in production."
+msgstr "Tajný klíč pro Flask session — změň v produkci."
+
+msgid "PostgreSQL connection string (default: SQLite)."
+msgstr "PostgreSQL connection string (výchozí: SQLite)."
+
+msgid "config_reset_hint"
+msgstr "Admin heslo je uloženo hashované v databázi. Resetuj ho spuštěním flask shell a voláním SystemConfig.set('setup_complete', '0'), poté znovu navštiv /setup."
+
+msgid "Mon"
+msgstr "Po"
+
+msgid "Tue"
+msgstr "Út"
+
+msgid "Wed"
+msgstr "St"
+
+msgid "Thu"
+msgstr "Čt"
+
+msgid "Fri"
+msgstr "Pá"
+
+msgid "Sat"
+msgstr "So"
+
+msgid "Sun"
+msgstr "Ne"
+
+msgid "Today you reached the daily limit of {n} videos. See you tomorrow! 🌙"
+msgstr "Dnes jsi dosáhl/a limitu {n} videí. Zítra zase! 🌙"
+
+msgid "All done today ✓"
+msgstr "Dnes vše splněno ✓"
+
+msgid "Today: {done}/{total} done"
+msgstr "Dnes: {done}/{total} splněno"
+
+msgid "✓ Done"
+msgstr "✓ Hotovo"
+
+msgid "Buy reward?\n\n{icon} {name}\n\nPrice: {cost} ⭐"
+msgstr "Koupit odměnu?\n\n{icon} {name}\n\nCena: {cost} ⭐"
+
+msgid "— cost you {cost} ⭐"
+msgstr "— stálo tě {cost} ⭐"
+
+msgid "You have {bal} ⭐, you need {cost} ⭐"
+msgstr "Máš {bal} ⭐, potřebuješ {cost} ⭐"
+
+msgid "Connection error"
+msgstr "Chyba připojení"
+
+msgid "Did you complete the task?\n\n{icon} {name}\n\nYou get: +{points} ⭐"
+msgstr "Splnil/a jsi úkol?\n\n{icon} {name}\n\nZískaš: +{points} ⭐"
+
+msgid "+{points} ⭐ {chore} completed! 🎉"
+msgstr "+{points} ⭐ {chore} splněno! 🎉"

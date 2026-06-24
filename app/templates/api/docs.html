@@ -162,7 +162,7 @@
         <div class="px-4 py-3 flex items-start gap-4">
           <code class="text-indigo-400 shrink-0">deviceId</code>
           <span class="badge-req text-xs px-1.5 py-0.5 rounded shrink-0">required</span>
-          <span class="text-slate-400">The unique device key registered in Admin → Child → Devices. E.g. <code class="text-slate-300">nixos-kuba-01</code></span>
+          <span class="text-slate-400">The unique device key registered in Admin → Child → Devices. E.g. <code class="text-slate-300">my-device-01</code></span>
         </div>
       </div>
 
@@ -173,7 +173,7 @@
           <pre class="text-sm text-slate-300">{
   "allowed": true,
   "childId": 1,
-  "childName": "Kuba",
+  "childName": "child-name",
   "points": 42,
   "videoCost": 10,
   "maxVideos": 4,
@@ -187,7 +187,7 @@
           <p class="text-xs font-bold text-red-400 mb-2">RESPONSE 200 — blocked by admin</p>
           <pre class="text-sm text-slate-300">{
   "allowed": false,
-  "childName": "Kuba",
+  "childName": "child-name",
   "message": "Kiosek je teď nedostupný."
 }</pre>
         </div>
@@ -196,7 +196,7 @@
           <p class="text-xs font-bold text-red-400 mb-2">RESPONSE 200 — blocked by time schedule <span class="badge-locked text-xs px-1.5 py-0.5 rounded ml-1">schedule_locked</span></p>
           <pre class="text-sm text-slate-300">{
   "allowed": false,
-  "childName": "Kuba",
+  "childName": "child-name",
   "message": "Kiosek je zamčený. Jdi spát! 🌙",
   "schedule_locked": true
 }</pre>
@@ -211,7 +211,7 @@
       <!-- NixOS usage -->
       <div class="mt-4 rounded-xl bg-slate-900/50 border border-slate-800 p-4">
         <p class="text-xs font-bold text-slate-500 mb-2">NIXOS AGENT PATTERN (bash)</p>
-        <pre class="text-sm text-slate-300">DEVICE_KEY="nixos-kuba-01"
+        <pre class="text-sm text-slate-300">DEVICE_KEY="my-device-01"
 BASE="https://nexusys-kid.home.prod"
 
 policy=$(curl -sf "$BASE/api/device-policy?deviceId=$DEVICE_KEY")
@@ -420,7 +420,7 @@ done</pre>
       </div>
 
       <div class="mt-4 rounded-xl bg-slate-900/50 border border-slate-800 p-4 text-sm text-slate-400 space-y-2">
-        <p><span class="text-slate-300 font-bold">systemd unit</span> — add <code class="text-indigo-400">Environment=NEXUS_DEVICE_KEY=nixos-kuba-01</code> in the <code class="text-indigo-400">[Service]</code> block.</p>
+        <p><span class="text-slate-300 font-bold">systemd unit</span> — add <code class="text-indigo-400">Environment=NEXUS_DEVICE_KEY=my-device-01</code> in the <code class="text-indigo-400">[Service]</code> block.</p>
         <p><span class="text-slate-300 font-bold">TLS cert</span> — trust <code class="text-indigo-400">./certs/caddy-root-ca.crt</code> (exported by Caddy on build). Copy to <code class="text-indigo-400">/etc/ssl/certs/</code> and run <code class="text-indigo-400">update-ca-certificates</code>.</p>
         <p><span class="text-slate-300 font-bold">Schedule locking</span> — handled server-side. The agent doesn't need to know about lock windows; <code class="text-indigo-400">device-policy</code> returns <code class="text-indigo-400">allowed: false</code> automatically when a time lock is active.</p>
       </div>

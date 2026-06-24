@@ -23,4 +23,7 @@ PY
 
 flask db upgrade
 
+# Compile translation catalogs (.po → .mo)
+pybabel compile -d app/translations || true
+
 exec gunicorn --bind 0.0.0.0:${APP_PORT:-8080} --workers 2 "run:app"

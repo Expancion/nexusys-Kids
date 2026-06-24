@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="{{ get_locale() }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ _('Reward shop') }} — {{ _('Parent Panel') }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+
+  {% include 'admin/_admin_nav.html' %}
+
+  <main class="max-w-3xl mx-auto px-6 py-8 space-y-6">
+
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-black text-white">🛒 {{ _('Reward shop') }}</h1>
+        <p class="text-sm text-slate-400 mt-1">{{ _('Rewards kids can buy with earned stars.') }}</p>
+      </div>
+      <a href="/admin/rewards/new"
+         class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-sm font-bold
+                text-white transition active:scale-95">
+        + {{ _('New reward') }}
+      </a>
+    </div>
+
+    {% if rewards %}
+    <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
+      {% for r in rewards %}
+      <div class="flex items-center gap-4 px-5 py-4 {% if not r.active %}opacity-40{% endif %}
+                  hover:bg-slate-900/50 transition">
+        <div class="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-2xl shrink-0">
+          {{ r.icon }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-white">{{ r.name }}</p>
+          {% if r.description %}
+          <p class="text-xs text-slate-400 mt-0.5 truncate">{{ r.description }}</p>
+          {% endif %}
+        </div>
+        <div class="text-right shrink-0 mr-2">
+          <span class="text-yellow-400 font-black text-lg">{{ r.cost_points }}</span>
+          <span class="text-yellow-500/60 text-sm ml-0.5">⭐</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <form method="post" action="/admin/rewards/{{ r.id }}/toggle">
+            <button class="rounded-lg px-3 py-1.5 text-xs font-bold transition
+                           {% if r.active %}bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25
+                           {% else %}bg-slate-700 text-slate-400 hover:bg-slate-600{% endif %}">
+              {% if r.active %}✓ {{ _('Active') }}{% else %}✗ {{ _('Hidden') }}{% endif %}
+            </button>
+          </form>
+          <a href="/admin/rewards/{{ r.id }}/edit"
+             class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
+                    font-bold text-slate-300 transition">
+            {{ _('Edit') }}
+          </a>
+          <form method="post" action="/admin/rewards/{{ r.id }}/delete"
+                onsubmit="return confirm('{{ _('Delete reward?') }}')">
+            <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
+                           font-bold text-red-400 transition">
+              {{ _('Delete') }}
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="flex flex-col items-center gap-4 py-20 text-slate-500">
+      <span class="text-6xl">🛒</span>
+      <p class="text-lg font-bold">{{ _('No rewards yet') }}</p>
+      <p class="text-sm text-center max-w-sm">
+        {{ _('Add rewards kids can buy with stars — e.g. "30 min extra tablet", "Choose dinner", "Later bedtime".') }}
+      </p>
+      <a href="/admin/rewards/new"
+         class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 text-sm font-bold
+                text-white transition">
+        + {{ _('Add first reward') }}
+      </a>
+    </div>
+    {% endif %}
+
+  </main>
+</body>
+</html>

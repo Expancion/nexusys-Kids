@@ -1,10 +1,9 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ 'Upravit' if child else 'Nové' }} dítě — Rodičovský panel</title>
+  <title>{% if child %}{{ _('Edit child') }}{% else %}{{ _('New child') }}{% endif %} — {{ _('Parent Panel') }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: system-ui, sans-serif; }
@@ -14,16 +13,16 @@
     .swatch.selected { box-shadow:0 0 0 3px white;transform:scale(1.15); }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
 
   {% include 'admin/_admin_nav.html' %}
 
   <main class="max-w-lg mx-auto px-6 py-8">
     <div class="mb-6">
       <a href="{{ '/admin/children/' + child.id|string if child else '/admin/children' }}"
-         class="text-slate-400 hover:text-white transition text-sm">← Zpět</a>
+         class="text-slate-400 hover:text-white transition text-sm">← {{ _('Back') }}</a>
       <h1 class="text-xl font-black text-white mt-2">
-        {{ 'Upravit dítě' if child else 'Nové dítě' }}
+        {% if child %}{{ _('Edit child') }}{% else %}{{ _('New child') }}{% endif %}
       </h1>
     </div>
 
@@ -38,26 +37,26 @@
         </div>
         <div>
           <p class="font-black text-white text-lg" id="preview-name">
-            {{ child.name if child else 'Jméno dítěte' }}
+            {{ child.name if child else _('Child name') }}
           </p>
-          <p class="text-xs text-slate-500">Náhled avataru</p>
+          <p class="text-xs text-slate-500">{{ _('Avatar preview') }}</p>
         </div>
       </div>
 
       <!-- Name + icon -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Jméno</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Name') }}</label>
           <input type="text" name="name" required maxlength="80"
                  value="{{ child.name if child else '' }}"
-                 placeholder="Kuba"
-                 oninput="document.getElementById('preview-name').textContent=this.value||'Jméno dítěte'"
+                 placeholder="Jana"
+                 oninput="document.getElementById('preview-name').textContent=this.value||'{{ _('Child name') }}'"
                  class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                         placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
                         focus:ring-1 focus:ring-indigo-500 transition" />
         </div>
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona avataru</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Avatar icon') }}</label>
           <input type="text" name="avatar_icon" maxlength="4"
                  value="{{ child.avatar_icon if child else '🧒' }}"
                  oninput="document.getElementById('preview-icon').textContent=this.value||'🧒'"
@@ -69,7 +68,7 @@
 
       <!-- Color -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-2">Barva avataru</label>
+        <label class="block text-sm font-bold text-slate-300 mb-2">{{ _('Avatar colour') }}</label>
         <input type="hidden" name="avatar_color" id="color-input"
                value="{{ child.avatar_color if child else gradients[0][1] }}" />
         <div class="flex flex-wrap gap-2">
@@ -84,7 +83,7 @@
       <!-- Points (new only) -->
       {% if not child %}
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">Počáteční body</label>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Starting points') }}</label>
         <input type="number" name="points" min="0" max="99999" value="0"
                class="w-32 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                       focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
@@ -94,7 +93,7 @@
       <!-- video_cost + daily_limit -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Cena 1 videa (body)</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Video price (points)') }}</label>
           <input type="number" name="video_cost" min="0" max="9999"
                  value="{{ child.video_cost if child else 10 }}"
                  class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
@@ -102,7 +101,7 @@
         </div>
         <div>
           <label class="block text-sm font-bold text-slate-300 mb-1.5">
-            Denní limit videí <span class="text-slate-600">(0 = bez limitu)</span>
+            {{ _('Daily video limit') }} <span class="text-slate-600">(0 = {{ _('no limit') }})</span>
           </label>
           <input type="number" name="daily_video_limit" min="0" max="999"
                  value="{{ child.daily_video_limit if child else 0 }}"
@@ -121,12 +120,12 @@
         <button type="submit"
                 class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
                        text-white transition active:scale-95">
-          {{ 'Uložit' if child else 'Vytvořit' }}
+          {% if child %}{{ _('Save') }}{% else %}{{ _('Create') }}{% endif %}
         </button>
         <a href="{{ '/admin/children/' + child.id|string if child else '/admin/children' }}"
            class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
                   hover:border-slate-500 hover:text-white transition">
-          Zrušit
+          {{ _('Cancel') }}
         </a>
       </div>
     </form>

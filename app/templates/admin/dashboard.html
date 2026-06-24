@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="{{ get_locale() }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard — {{ _('Parent Panel') }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+
+  {% include 'admin/_admin_nav.html' %}
+
+  <main class="max-w-5xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Page header -->
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <p class="text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Nexusys Junior</p>
+        <h1 class="text-2xl font-black text-white">Dashboard</h1>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <a href="/admin/videos/new"
+           class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-bold text-white transition active:scale-95">
+          + {{ _('Video') }}
+        </a>
+        <a href="/admin/children/new"
+           class="rounded-xl border border-slate-700 hover:border-slate-500 px-4 py-2 text-sm font-bold text-slate-300 hover:text-white transition active:scale-95">
+          + {{ _('Child') }}
+        </a>
+      </div>
+    </div>
+
+    <!-- KPI row -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div class="text-2xl font-black text-white">{{ child_stats | length }}</div>
+        <div class="text-xs text-slate-500 font-bold mt-1">{{ _('Children') }}</div>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div class="text-2xl font-black text-sky-400">{{ video_count }}</div>
+        <div class="text-xs text-slate-500 font-bold mt-1">{{ _('Active videos') }}</div>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div class="text-2xl font-black text-amber-400">{{ reward_count }}</div>
+        <div class="text-xs text-slate-500 font-bold mt-1">{{ _('Shop rewards') }}</div>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div class="text-2xl font-black text-emerald-400">
+          {{ child_stats | sum(attribute='done_today') }}
+        </div>
+        <div class="text-xs text-slate-500 font-bold mt-1">{{ _('Tasks done today') }}</div>
+      </div>
+    </div>
+
+    <!-- Children cards -->
+    {% if child_stats %}
+    <section>
+      <h2 class="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">{{ _('Children') }}</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for cs in child_stats %}
+        {% set c = cs.child %}
+        <a href="/admin/children/{{ c.id }}"
+           class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 flex items-center gap-4
+                  hover:border-slate-600 hover:bg-slate-800/60 transition group">
+
+          <!-- Avatar -->
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0"
+               style="background: {{ c.avatar_color }};">
+            {{ c.avatar_icon }}
+          </div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="font-black text-white text-base group-hover:text-indigo-300 transition">{{ c.name }}</div>
+            <div class="flex items-center gap-3 mt-1 flex-wrap">
+              <span class="text-yellow-400 font-black text-sm">{{ c.points }} ⭐</span>
+              {% if cs.total_chores > 0 %}
+              <span class="text-xs text-slate-400 font-bold">
+                {{ _('Today') }}: {{ cs.done_today }}/{{ cs.total_chores }} {{ _('tasks') }}
+              </span>
+              {% endif %}
+              {% if cs.watches_today > 0 %}
+              <span class="text-xs text-slate-400 font-bold">
+                {{ cs.watches_today }}× {{ _('videos today') }}
+              </span>
+              {% endif %}
+            </div>
+            <!-- Progress bar for today's chores -->
+            {% if cs.total_chores > 0 %}
+            <div class="mt-2 h-1.5 rounded-full bg-slate-800 overflow-hidden w-full">
+              <div class="h-full rounded-full transition-all
+                          {% if cs.done_today == cs.total_chores %}bg-emerald-500
+                          {% elif cs.done_today > 0 %}bg-indigo-500
+                          {% else %}bg-slate-700{% endif %}"
+                   style="width: {{ (cs.done_today / cs.total_chores * 100) | int }}%">
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Arrow -->
+          <div class="text-slate-600 group-hover:text-slate-400 transition text-lg shrink-0">›</div>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% else %}
+    <div class="rounded-2xl border border-dashed border-slate-700 p-10 text-center text-slate-500">
+      <div class="text-4xl mb-3">👶</div>
+      <p class="font-bold">{{ _('No children yet.') }}</p>
+      <a href="/admin/children/new"
+         class="mt-4 inline-block rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2 text-sm font-bold text-white transition">
+        {{ _('Add child') }}
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Recent activity -->
+    {% if recent_tx %}
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-black uppercase tracking-widest text-slate-500">{{ _('Recent activity') }}</h2>
+        <a href="/admin/stats" class="text-xs text-indigo-400 hover:text-indigo-300 font-bold transition">
+          {{ _('All statistics') }} →
+        </a>
+      </div>
+      <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
+        {% for tx in recent_tx %}
+        <div class="flex items-center gap-4 px-5 py-3 bg-slate-900/40 hover:bg-slate-800/40 transition">
+          <span class="text-xl shrink-0 select-none">
+            {% if tx.delta > 0 %}⭐{% elif 'Obchod' in tx.reason %}🛒{% elif 'Hra' in tx.reason %}🎮{% else %}📺{% endif %}
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold text-white truncate">{{ tx.reason }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">
+              {% for cs in child_stats %}{% if cs.child.id == tx.child_id %}{{ cs.child.name }} · {% endif %}{% endfor %}{{ tx.created_at.strftime('%d.%m. %H:%M') }}
+            </p>
+          </div>
+          <span class="font-black text-sm shrink-0
+                       {{ 'text-emerald-400' if tx.delta > 0 else 'text-rose-400' }}">
+            {{ '+' if tx.delta > 0 else '' }}{{ tx.delta }} ⭐
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Send message -->
+    {% if child_stats %}
+    <section>
+      <h2 class="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">{{ _('Send message to kiosk') }}</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for cs in child_stats %}
+        {% set c = cs.child %}
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-lg">{{ c.avatar_icon }}</span>
+            <span class="text-sm font-black text-white">{{ c.name }}</span>
+          </div>
+          <form method="post" action="/admin/children/{{ c.id }}/send-message" class="flex gap-2">
+            <select name="icon"
+                    class="rounded-xl bg-slate-800 border border-slate-700 px-2 py-2 text-base
+                           focus:outline-none focus:border-indigo-500 transition shrink-0">
+              <option>💬</option><option>🍕</option><option>⏰</option>
+              <option>📚</option><option>🎮</option><option>🌙</option>
+              <option>🔔</option><option>❤️</option><option>⚠️</option>
+            </select>
+            <input type="text" name="text" placeholder="{{ _('Message for %(name)s…', name=c.name) }}" required
+                   class="flex-1 rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm
+                          text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition" />
+            <button type="submit"
+                    class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm
+                           font-bold text-white transition active:scale-95 shrink-0">
+              {{ _('Send') }}
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- Quick links -->
+    <section>
+      <h2 class="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">{{ _('Kiosk settings') }}</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <a href="/admin/videos"
+           class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col gap-2
+                  hover:border-slate-600 hover:bg-slate-800/60 transition">
+          <span class="text-2xl">📺</span>
+          <span class="text-sm font-black text-white">{{ _('Videos') }}</span>
+          <span class="text-xs text-slate-500">{{ _('Video & playlist management') }}</span>
+        </a>
+        <a href="/admin/tiles"
+           class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col gap-2
+                  hover:border-slate-600 hover:bg-slate-800/60 transition">
+          <span class="text-2xl">🧩</span>
+          <span class="text-sm font-black text-white">{{ _('Tiles') }}</span>
+          <span class="text-xs text-slate-500">{{ _('Home screen icons') }}</span>
+        </a>
+        <a href="/admin/tasks"
+           class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col gap-2
+                  hover:border-slate-600 hover:bg-slate-800/60 transition">
+          <span class="text-2xl">⭐</span>
+          <span class="text-sm font-black text-white">{{ _('Tasks') }}</span>
+          <span class="text-xs text-slate-500">{{ _('Task & reward templates') }}</span>
+        </a>
+        <a href="/admin/rewards"
+           class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex flex-col gap-2
+                  hover:border-slate-600 hover:bg-slate-800/60 transition">
+          <span class="text-2xl">🛒</span>
+          <span class="text-sm font-black text-white">{{ _('Shop') }}</span>
+          <span class="text-xs text-slate-500">{{ _('Star rewards') }}</span>
+        </a>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

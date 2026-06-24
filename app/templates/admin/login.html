@@ -1,10 +1,9 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Přihlášení — Rodičovský panel</title>
+  <title>{{ _('Parent Panel') }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: system-ui, sans-serif; }
@@ -15,13 +14,13 @@
 
     <div class="text-center mb-8">
       <div class="text-5xl mb-3">🔐</div>
-      <h1 class="text-2xl font-black text-white">Rodičovský panel</h1>
-      <p class="text-slate-400 text-sm mt-1">Zadej rodičovské heslo pro vstup</p>
+      <h1 class="text-2xl font-black text-white">{{ _('Parent Panel') }}</h1>
+      <p class="text-slate-400 text-sm mt-1">{{ _('Enter the parent password to continue') }}</p>
     </div>
 
     <form method="post" class="space-y-4">
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">Heslo</label>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Password') }}</label>
         <input
           type="password"
           name="password"
@@ -45,12 +44,12 @@
         class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-3 font-bold text-white
                transition active:scale-95"
       >
-        Vstoupit
+        {{ _('Sign in') }}
       </button>
     </form>
 
     <div class="mt-6 text-center">
-      <a href="/" class="text-sm text-slate-500 hover:text-slate-300 transition">← Zpět na kiosek</a>
+      <a href="/" class="text-sm text-slate-500 hover:text-slate-300 transition">← {{ _('Back to kiosk') }}</a>
     </div>
 
   </div>

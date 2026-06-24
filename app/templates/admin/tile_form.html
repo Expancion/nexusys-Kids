@@ -1,10 +1,9 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ 'Upravit' if tile else 'Nová' }} dlaždice — Rodičovský panel</title>
+  <title>{% if tile %}{{ _('Edit tile') }}{% else %}{{ _('New tile') }}{% endif %} — {{ _('Parent Panel') }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: system-ui, sans-serif; }
@@ -19,14 +18,14 @@
     }
   </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+  {% include 'admin/_admin_nav.html' %}
 
-  <!-- Nav -->
   <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
               bg-slate-950/90 backdrop-blur px-6 py-3">
     <a href="/admin/tiles" class="text-slate-400 hover:text-white transition">←</a>
     <span class="font-black text-white">
-      {{ 'Upravit dlaždici' if tile else 'Nová dlaždice' }}
+      {% if tile %}{{ _('Edit tile') }}{% else %}{{ _('New tile') }}{% endif %}
     </span>
   </nav>
 
@@ -38,33 +37,44 @@
         <div id="tile-preview" style="background: {{ tile.color if tile else gradients[6][1] }};">
           <span id="preview-icon" class="text-4xl leading-none">{{ tile.icon if tile else '🌐' }}</span>
           <span id="preview-name" class="text-white font-black text-xs text-center leading-tight px-2 truncate max-w-full">
-            {{ tile.name if tile else 'Název' }}
+            {{ tile.name if tile else _('Name') }}
           </span>
         </div>
         <div class="flex-1">
-          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-2">Náhled</p>
-          <p class="text-sm text-slate-400">Náhled se aktualizuje živě při editaci.</p>
+          <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-2">{{ _('Preview') }}</p>
+          <p class="text-sm text-slate-400">{{ _('Preview updates in real time.') }}</p>
         </div>
       </div>
 
       <!-- Name -->
-      <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">Název</label>
-        <input type="text" name="name" required maxlength="80"
-               value="{{ tile.name if tile else '' }}"
-               placeholder="Písmenka"
-               oninput="document.getElementById('preview-name').textContent = this.value || 'Název'"
-               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
-                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
-                      focus:ring-1 focus:ring-indigo-500 transition" />
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Name') }} 🇨🇿</label>
+          <input type="text" name="name" required maxlength="80"
+                 value="{{ tile.name if tile else '' }}"
+                 placeholder="{{ _('Letters') }}"
+                 oninput="document.getElementById('preview-name').textContent = this.value || '{{ _('Name') }}'"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                        focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Name') }} 🇬🇧 <span class="font-normal text-slate-500">({{ _('optional') }})</span></label>
+          <input type="text" name="name_en" maxlength="80"
+                 value="{{ tile.name_en if tile and tile.name_en else '' }}"
+                 placeholder="{{ _('English name') }}"
+                 class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                        placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                        focus:ring-1 focus:ring-indigo-500 transition" />
+        </div>
       </div>
 
       <!-- URL -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-1.5">URL adresa</label>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('URL') }}</label>
         <input type="text" name="url" required maxlength="255"
                value="{{ tile.url if tile else '' }}"
-               placeholder="https://example.com nebo /games/letters"
+               placeholder="https://example.com {{ _('or') }} /games/letters"
                class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                       placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
                       focus:ring-1 focus:ring-indigo-500 transition font-mono text-sm" />
@@ -73,7 +83,7 @@
       <!-- Icon + Category row -->
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Ikona (emoji)</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Icon (emoji)') }}</label>
           <input type="text" name="icon" maxlength="4"
                  value="{{ tile.icon if tile else '🌐' }}"
                  oninput="document.getElementById('preview-icon').textContent = this.value || '🌐'"
@@ -82,14 +92,14 @@
                         focus:ring-1 focus:ring-indigo-500 transition" />
         </div>
         <div>
-          <label class="block text-sm font-bold text-slate-300 mb-1.5">Kategorie</label>
+          <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Category') }}</label>
           <select name="category"
                   class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
                          focus:outline-none focus:border-indigo-500 focus:ring-1
                          focus:ring-indigo-500 transition">
             {% for key, label in categories %}
             <option value="{{ key }}" {{ 'selected' if tile and tile.category == key }}>
-              {{ label }}
+              {{ _(label) }}
             </option>
             {% endfor %}
           </select>
@@ -98,7 +108,7 @@
 
       <!-- Color picker -->
       <div>
-        <label class="block text-sm font-bold text-slate-300 mb-2">Barva dlaždice</label>
+        <label class="block text-sm font-bold text-slate-300 mb-2">{{ _('Tile colour') }}</label>
         <input type="hidden" name="color" id="color-input"
                value="{{ tile.color if tile else gradients[6][1] }}" />
         <div class="flex flex-wrap gap-2">
@@ -114,7 +124,7 @@
       <!-- Sort order -->
       <div>
         <label class="block text-sm font-bold text-slate-300 mb-1.5">
-          Pořadí <span class="text-slate-500 font-normal">(nižší číslo = dříve)</span>
+          {{ _('Order') }} <span class="text-slate-500 font-normal">({{ _('lower number = first') }})</span>
         </label>
         <input type="number" name="sort_order" min="0" max="999"
                value="{{ tile.sort_order if tile else 0 }}"
@@ -123,17 +133,16 @@
                       focus:ring-indigo-500 transition" />
       </div>
 
-      <!-- Submit -->
       <div class="flex gap-3 pt-2">
         <button type="submit"
                 class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
                        text-white transition active:scale-95">
-          {{ 'Uložit změny' if tile else 'Přidat dlaždici' }}
+          {% if tile %}{{ _('Save changes') }}{% else %}{{ _('Add tile') }}{% endif %}
         </button>
         <a href="/admin/tiles"
            class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
                   hover:border-slate-500 hover:text-white transition">
-          Zrušit
+          {{ _('Cancel') }}
         </a>
       </div>
 

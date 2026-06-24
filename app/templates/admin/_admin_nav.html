@@ -1,62 +1,128 @@
-{# Shared admin navigation bar — included in all admin pages #}
+{# Fixed left sidebar — CarJoy-inspired layout #}
 {% set ep = request.endpoint %}
-<nav class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800
-            bg-slate-950/90 backdrop-blur px-6 py-3 gap-4 flex-wrap">
-  <div class="flex items-center gap-2 flex-wrap">
-    <span class="text-lg font-black text-white mr-2">⚙️ Rodičovský panel</span>
+<style>
+  body { padding-left: 240px; }
+  @media (max-width: 900px) { body { padding-left: 0; } }
+
+  .sb-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    color: rgba(148,163,184,1); text-decoration: none;
+    transition: background .15s, color .15s;
+    cursor: pointer; white-space: nowrap;
+  }
+  .sb-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+  .sb-item.active { background: rgba(99,102,241,.18); color: #a5b4fc; }
+  .sb-item .sb-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+  .sb-label {
+    font-size: 10px; font-weight: 900; letter-spacing: .08em;
+    text-transform: uppercase; color: rgba(100,116,139,.7);
+    padding: 14px 12px 4px;
+  }
+  .lang-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 24px; border-radius: 6px; font-size: 11px; font-weight: 900;
+    text-decoration: none; transition: background .15s, color .15s;
+    color: rgba(148,163,184,.8);
+  }
+  .lang-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .lang-btn.lang-active { background: rgba(99,102,241,.25); color: #a5b4fc; }
+</style>
+
+<aside style="
+  position: fixed; top: 0; left: 0; bottom: 0; width: 240px; z-index: 30;
+  background: #09090f;
+  border-right: 1px solid rgba(255,255,255,.06);
+  display: flex; flex-direction: column;
+  font-family: system-ui, sans-serif;
+">
+
+  <!-- Logo -->
+  <div style="padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,.06);">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div style="width:36px;height:36px;border-radius:10px;
+                  background:linear-gradient(135deg,#6366f1,#4338ca);
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:18px;flex-shrink:0;">🚀</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:900;color:#fff;line-height:1.1;">Nexusys</div>
+        <div style="font-size:10px;font-weight:700;color:rgba(100,116,139,.8);margin-top:2px;">Junior Panel</div>
+      </div>
+      <!-- Language switcher -->
+      <div style="display:flex;gap:3px;flex-shrink:0;">
+        {% set cur_lang = request.cookies.get('lang','cs') %}
+        <a href="/lang/cs" class="lang-btn {{ 'lang-active' if cur_lang == 'cs' }}">CS</a>
+        <a href="/lang/en" class="lang-btn {{ 'lang-active' if cur_lang == 'en' }}">EN</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav style="flex:1; padding: 10px 8px; overflow-y:auto; display:flex; flex-direction:column; gap:1px;">
+
+    <a href="/admin"
+       class="sb-item {% if ep == 'admin.index' %}active{% endif %}">
+      <span class="sb-icon">🏡</span> Dashboard
+    </a>
+
+    <div class="sb-label">{{ _('Content') }}</div>
 
     <a href="/admin/tiles"
-       class="rounded-xl px-4 py-1.5 text-sm font-bold transition
-              {% if ep in ('admin.tiles', 'admin.tile_new', 'admin.tile_edit') %}
-                bg-slate-700 text-white
-              {% else %}
-                border border-slate-700 text-slate-400 hover:text-white
-              {% endif %}">
-      🧩 Dlaždice
+       class="sb-item {% if ep in ('admin.tiles','admin.tile_new','admin.tile_edit') %}active{% endif %}">
+      <span class="sb-icon">🧩</span> {{ _('Tiles') }}
     </a>
+
     <a href="/admin/videos"
-       class="rounded-xl px-4 py-1.5 text-sm font-bold transition
-              {% if ep in ('admin.videos', 'admin.video_new', 'admin.video_edit', 'admin.video_cat_new', 'admin.video_cat_edit') %}
-                bg-slate-700 text-white
-              {% else %}
-                border border-slate-700 text-slate-400 hover:text-white
-              {% endif %}">
-      📺 Videa
+       class="sb-item {% if ep in ('admin.videos','admin.video_new','admin.video_edit','admin.video_cat_new','admin.video_cat_edit') %}active{% endif %}">
+      <span class="sb-icon">📺</span> {{ _('Videos') }}
     </a>
+
+    <div class="sb-label">{{ _('Family') }}</div>
+
     <a href="/admin/children"
-       class="rounded-xl px-4 py-1.5 text-sm font-bold transition
-              {% if ep in ('admin.children', 'admin.child_new', 'admin.child_edit', 'admin.child_detail', 'admin.device_new', 'admin.device_edit') %}
-                bg-slate-700 text-white
-              {% else %}
-                border border-slate-700 text-slate-400 hover:text-white
-              {% endif %}">
-      👶 Děti
+       class="sb-item {% if ep in ('admin.children','admin.child_new','admin.child_edit','admin.child_detail','admin.device_new','admin.device_edit','admin.chore_new','admin.chore_edit','admin.schedule_new') %}active{% endif %}">
+      <span class="sb-icon">👶</span> {{ _('Children') }}
     </a>
+
     <a href="/admin/tasks"
-       class="rounded-xl px-4 py-1.5 text-sm font-bold transition
-              {% if ep in ('admin.tasks', 'admin.task_new', 'admin.task_edit') %}
-                bg-slate-700 text-white
-              {% else %}
-                border border-slate-700 text-slate-400 hover:text-white
-              {% endif %}">
-      ⭐ Úkoly
+       class="sb-item {% if ep in ('admin.tasks','admin.task_new','admin.task_edit') %}active{% endif %}">
+      <span class="sb-icon">⭐</span> {{ _('Tasks') }}
     </a>
-    <a href="/api/"
-       class="rounded-xl px-4 py-1.5 text-sm font-bold transition
-              border border-slate-700 text-slate-400 hover:text-white">
-      🔌 API
+
+    <a href="/admin/rewards"
+       class="sb-item {% if ep in ('admin.rewards','admin.reward_new','admin.reward_edit') %}active{% endif %}">
+      <span class="sb-icon">🛒</span> {{ _('Shop') }}
     </a>
-  </div>
-  <div class="flex items-center gap-3 shrink-0">
-    <a href="/" class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
-                       text-slate-300 hover:border-slate-500 hover:text-white transition">
-      🏠 Kiosek
+
+    <div class="sb-label">{{ _('Reports') }}</div>
+
+    <a href="/admin/stats"
+       class="sb-item {% if ep == 'admin.stats' %}active{% endif %}">
+      <span class="sb-icon">📊</span> {{ _('Statistics') }}
     </a>
-    <form method="post" action="/admin/logout" class="inline">
-      <button class="rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2 text-sm
-                     font-bold text-slate-300 transition">
-        Odhlásit
+
+    <a href="/api/" class="sb-item">
+      <span class="sb-icon">🔌</span> API docs
+    </a>
+
+    <a href="/admin/help"
+       class="sb-item {% if ep == 'admin.help' %}active{% endif %}">
+      <span class="sb-icon">📖</span> {{ _('Guide') }}
+    </a>
+
+  </nav>
+
+  <!-- Footer -->
+  <div style="padding: 8px; border-top: 1px solid rgba(255,255,255,.06);">
+    <a href="/" class="sb-item">
+      <span class="sb-icon">🏠</span> {{ _('Back to kiosk') }}
+    </a>
+    <form method="post" action="/admin/logout" style="margin:0;">
+      <button type="submit" class="sb-item" style="width:100%; border:none; background:none; text-align:left;">
+        <span class="sb-icon">🚪</span> {{ _('Sign out') }}
       </button>
     </form>
   </div>
-</nav>
+
+</aside>

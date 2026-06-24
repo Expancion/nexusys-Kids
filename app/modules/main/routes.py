@@ -1,12 +1,16 @@
 import json
-from datetime import date as date_cls, datetime as dt_cls
+from datetime import date as date_cls, datetime as dt_cls, timedelta
 
-from flask import Blueprint, render_template
-from sqlalchemy import or_
+from flask import Blueprint, make_response, redirect, render_template, request
+from sqlalchemy import func, or_
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from ...extensions import db
-from ...models import (Child, ChildSchedule, ChoreCompletion, DailyChore,
-                       KioskTile, KioskVideo, Note, VideoCategory)
+from ...achievements import ACHIEVEMENTS
+from ...models import (Child, ChildAchievement, ChildGoal, ChildSchedule,
+                       ChoreCompletion, DailyChore, KioskTile, KioskVideo,
+                       Note, PointTransaction, ShopReward, SystemConfig,
+                       VideoCategory, WatchSession)
 
 main_bp = Blueprint("main", __name__)
 
@@ -27,6 +31,18 @@ DEFAULT_TILES = [
 ]
 
 
+def _compute_streak(child_id: int) -> int:
+    d = date_cls.today()
+    streak = 0
+    while streak < 366:
+        if ChoreCompletion.query.filter_by(child_id=child_id, completed_date=d).first():
+            streak += 1
+            d -= timedelta(days=1)
+        else:
+            break
+    return streak
+
+
 def _seed_tiles():
     changed = False
     for t in DEFAULT_TILES:
@@ -37,16 +53,45 @@ def _seed_tiles():
         db.session.commit()
 
 
+@main_bp.route("/setup", methods=["GET", "POST"])
+def setup():
+    if SystemConfig.get("setup_complete") == "1":
+        return redirect("/")
+    error = None
+    if request.method == "POST":
+        lang = request.form.get("lang", "cs")
+        if lang not in ("cs", "en"):
+            lang = "cs"
+        pw = request.form.get("password", "").strip()
+        pw2 = request.form.get("password2", "").strip()
+        if len(pw) < 6:
+            error = {"cs": "Heslo musí mít alespoň 6 znaků.", "en": "Password must be at least 6 characters."}[lang]
+        elif pw != pw2:
+            error = {"cs": "Hesla se neshodují.", "en": "Passwords do not match."}[lang]
+        else:
+            SystemConfig.set("admin_password_hash", generate_password_hash(pw))
+            SystemConfig.set("default_lang", lang)
+            SystemConfig.set("setup_complete", "1")
+            resp = make_response(redirect("/admin"))
+            resp.set_cookie("lang", lang, max_age=365 * 24 * 3600, samesite="Lax")
+            return resp
+    return render_template("setup.html", error=error)
+
+
+@main_bp.get("/lang/<code>")
+def set_lang(code):
+    if code not in ('cs', 'en'):
+        code = 'cs'
+    resp = make_response(redirect(request.referrer or '/'))
+    resp.set_cookie('lang', code, max_age=365 * 24 * 3600, samesite='Lax')
+    return resp
+
+
 @main_bp.get("/")
 def index():
     _seed_tiles()
-    tiles = (
-        KioskTile.query
-        .filter(KioskTile.enabled == True, KioskTile.category != 'hry')
-        .order_by(KioskTile.sort_order, KioskTile.id)
-        .all()
-    )
-    return render_template("index.html", tiles=tiles, categories=CATEGORIES)
+    children = Child.query.order_by(Child.name).all()
+    return render_template("index.html", children=children)
 
 
 @main_bp.get("/kiosk/<int:child_id>")
@@ -118,12 +163,60 @@ def child_kiosk(child_id):
         .all()
     )
 
+    channel_names = [
+        row[0] for row in
+        db.session.query(KioskVideo.channel_name)
+        .filter(KioskVideo.enabled == True, KioskVideo.channel_name.isnot(None))
+        .distinct()
+        .order_by(KioskVideo.channel_name)
+        .all()
+    ]
+
+    shop_rewards = (
+        ShopReward.query
+        .filter_by(active=True)
+        .order_by(ShopReward.sort_order, ShopReward.id)
+        .all()
+    )
+
+    transactions = (
+        PointTransaction.query
+        .filter_by(child_id=child_id)
+        .order_by(PointTransaction.created_at.desc())
+        .limit(30)
+        .all()
+    )
+
+    active_goal = ChildGoal.query.filter_by(child_id=child_id, active=True).first()
+    streak = _compute_streak(child_id)
+
+    earned_ids = {
+        r.achievement_id
+        for r in ChildAchievement.query.filter_by(child_id=child_id).all()
+    }
+    achievements_all = [
+        {"id": k, **v, "earned": k in earned_ids}
+        for k, v in ACHIEVEMENTS.items()
+    ]
+
+    watches_today = WatchSession.query.filter(
+        WatchSession.child_id == child_id,
+        func.date(WatchSession.started_at) == today,
+    ).count()
+
     return render_template(
         "kiosk/child.html",
         child=child,
         cats=cats,
         videos=videos,
         extra_tiles=extra_tiles,
+        channel_names=channel_names,
+        shop_rewards=shop_rewards,
+        transactions=transactions,
+        streak=streak,
+        watches_today=watches_today,
+        achievements=achievements_all,
+        active_goal=active_goal,
         chores_json=json.dumps(chores_by_wd),
         done_today_json=json.dumps(list(done_today_ids)),
         schedules_json=json.dumps(schedules_js),

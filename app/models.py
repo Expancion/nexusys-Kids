@@ -5,6 +5,27 @@ from urllib.parse import parse_qs, urlparse
 from .extensions import db
 
 
+class SystemConfig(db.Model):
+    """Key-value store for system-wide settings (setup_complete, admin_password_hash, default_lang)."""
+    __tablename__ = "system_config"
+    key   = db.Column(db.String(64), primary_key=True)
+    value = db.Column(db.Text, nullable=False)
+
+    @classmethod
+    def get(cls, key, default=None):
+        row = cls.query.get(key)
+        return row.value if row else default
+
+    @classmethod
+    def set(cls, key, value):
+        row = cls.query.get(key)
+        if row:
+            row.value = value
+        else:
+            db.session.add(cls(key=key, value=value))
+        db.session.commit()
+
+
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
@@ -14,6 +35,7 @@ class Note(db.Model):
 class KioskTile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
+    name_en = db.Column(db.String(80), nullable=True)
     url = db.Column(db.String(255), nullable=False)
     icon = db.Column(db.String(10), nullable=False, default="🌐")
     category = db.Column(db.String(40), nullable=False, default="web")
@@ -37,6 +59,7 @@ class KioskVideo(db.Model):
     title = db.Column(db.String(120), nullable=False)
     youtube_id = db.Column(db.String(20), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey("video_category.id"), nullable=False)
+    channel_name = db.Column(db.String(120), nullable=True)
     enabled = db.Column(db.Boolean, default=True, nullable=False)
     sort_order = db.Column(db.Integer, default=0)
     price = db.Column(db.Integer, nullable=True)  # None = use child.video_cost
@@ -105,6 +128,18 @@ class RewardTask(db.Model):
     sort_order = db.Column(db.Integer, default=0)
 
 
+class ShopReward(db.Model):
+    """A redeemable reward that children can buy with their points."""
+    __tablename__ = "shop_reward"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    icon = db.Column(db.String(10), nullable=False, default="🎁")
+    cost_points = db.Column(db.Integer, nullable=False, default=50)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    sort_order = db.Column(db.Integer, default=0)
+
+
 class PointTransaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     child_id = db.Column(db.Integer, db.ForeignKey("child.id"), nullable=False)
@@ -147,6 +182,39 @@ class ChoreCompletion(db.Model):
     completed_date = db.Column(db.Date, nullable=False)
     awarded_points = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ChildAchievement(db.Model):
+    """Records that a child earned a specific achievement."""
+    __tablename__ = "child_achievement"
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey("child.id", ondelete="CASCADE"), nullable=False)
+    achievement_id = db.Column(db.String(40), nullable=False)
+    earned_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ChildGoal(db.Model):
+    """A savings goal a child is working toward (linked to a ShopReward)."""
+    __tablename__ = "child_goal"
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey("child.id", ondelete="CASCADE"), nullable=False)
+    reward_id = db.Column(db.Integer, db.ForeignKey("shop_reward.id", ondelete="SET NULL"), nullable=True)
+    name = db.Column(db.String(120), nullable=False)
+    icon = db.Column(db.String(10), nullable=False, default="🎯")
+    target_points = db.Column(db.Integer, nullable=False)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class KioskMessage(db.Model):
+    """Parent-to-child message displayed as a popup on the kiosk."""
+    __tablename__ = "kiosk_message"
+    id = db.Column(db.Integer, primary_key=True)
+    child_id = db.Column(db.Integer, db.ForeignKey("child.id", ondelete="CASCADE"), nullable=False)
+    text = db.Column(db.String(280), nullable=False)
+    icon = db.Column(db.String(10), nullable=False, default="💬")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    read_at = db.Column(db.DateTime, nullable=True)
 
 
 class ChildSchedule(db.Model):

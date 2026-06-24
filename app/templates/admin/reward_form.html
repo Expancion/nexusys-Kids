@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="{{ get_locale() }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% if reward %}{{ _('Edit reward') }}{% else %}{{ _('New reward') }}{% endif %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
+  {% include 'admin/_admin_nav.html' %}
+
+  <nav class="sticky top-0 z-10 flex items-center gap-4 border-b border-slate-800
+              bg-slate-950/90 backdrop-blur px-6 py-3">
+    <a href="/admin/rewards" class="text-slate-400 hover:text-white transition">←</a>
+    <span class="font-black text-white">{% if reward %}{{ _('Edit reward') }}{% else %}{{ _('New reward') }}{% endif %}</span>
+  </nav>
+
+  <main class="max-w-lg mx-auto px-6 py-8">
+    <form method="post" class="space-y-5">
+
+      <!-- Preview -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900 p-5 flex items-center gap-4">
+        <div id="icon-preview"
+             class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center text-3xl shrink-0">
+          {{ reward.icon if reward else '🎁' }}
+        </div>
+        <div>
+          <p id="name-preview" class="font-black text-white text-lg leading-tight">
+            {{ reward.name if reward else _('Reward name') }}
+          </p>
+          <p class="text-yellow-400 font-black mt-1">
+            <span id="cost-preview">{{ reward.cost_points if reward else 50 }}</span> ⭐
+          </p>
+        </div>
+      </div>
+
+      <!-- Icon -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Emoji icon') }}</label>
+        <input type="text" name="icon" maxlength="4"
+               value="{{ reward.icon if reward else '🎁' }}"
+               oninput="document.getElementById('icon-preview').textContent=this.value||'🎁'"
+               class="w-24 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white text-2xl
+                      text-center focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- Name -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Name') }}</label>
+        <input type="text" name="name" required maxlength="120"
+               value="{{ reward.name if reward else '' }}"
+               placeholder="{{ _('30 min extra tablet time') }}"
+               oninput="document.getElementById('name-preview').textContent=this.value||'{{ _('Reward name') }}'"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">
+          {{ _('Description') }} <span class="text-slate-500 font-normal">— {{ _('optional') }}</span>
+        </label>
+        <input type="text" name="description" maxlength="255"
+               value="{{ reward.description if (reward and reward.description) else '' }}"
+               placeholder="{{ _('e.g. valid for one day, parent must approve') }}"
+               class="w-full rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      placeholder:text-slate-500 focus:outline-none focus:border-indigo-500
+                      focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- Cost -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Price in stars') }} ⭐</label>
+        <input type="number" name="cost_points" required min="1" max="9999"
+               value="{{ reward.cost_points if reward else 50 }}"
+               oninput="document.getElementById('cost-preview').textContent=this.value||'0'"
+               class="w-36 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <!-- Sort order -->
+      <div>
+        <label class="block text-sm font-bold text-slate-300 mb-1.5">{{ _('Order') }}</label>
+        <input type="number" name="sort_order" min="0" max="999"
+               value="{{ reward.sort_order if reward else 0 }}"
+               class="w-28 rounded-xl bg-slate-800 border border-slate-700 px-4 py-3 text-white
+                      focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" />
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-6 py-3 font-bold
+                       text-white transition active:scale-95">
+          {% if reward %}{{ _('Save') }}{% else %}{{ _('Add reward') }}{% endif %}
+        </button>
+        <a href="/admin/rewards"
+           class="rounded-xl border border-slate-700 px-6 py-3 font-bold text-slate-300
+                  hover:border-slate-500 hover:text-white transition">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

@@ -1,14 +1,13 @@
 <!doctype html>
-<html lang="cs" translate="no">
+<html lang="{{ get_locale() }}">
 <head>
   <meta charset="utf-8" />
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ child.name }} — Rodičovský panel</title>
+  <title>{{ child.name }} — {{ _('Parent Panel') }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>body { font-family: system-ui, sans-serif; }</style>
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100">
+<body class="min-h-screen bg-[#0d0d18] text-slate-100">
 
   {% include 'admin/_admin_nav.html' %}
 
@@ -23,9 +22,12 @@
       <div class="flex-1">
         <h1 class="text-3xl font-black text-white">{{ child.name }}</h1>
         <p class="text-slate-500 text-sm mt-1">
+          {% if get_locale()|string == 'en' %}
+          1 video = {{ child.video_cost }} pts
+          {% if child.daily_video_limit > 0 %}· limit {{ child.daily_video_limit }} videos/day{% endif %}
+          {% else %}
           1 video = {{ child.video_cost }} bodů
-          {% if child.daily_video_limit > 0 %}
-            · limit {{ child.daily_video_limit }} videí/den
+          {% if child.daily_video_limit > 0 %}· limit {{ child.daily_video_limit }} videí/den{% endif %}
           {% endif %}
         </p>
       </div>
@@ -33,18 +35,18 @@
         <a href="/kiosk/{{ child.id }}" target="_blank"
            class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-bold
                   text-white transition active:scale-95">
-          ▶ Kiosek
+          ▶ {{ _('Kiosk') }}
         </a>
         <a href="/admin/children/{{ child.id }}/edit"
            class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
                   text-slate-300 hover:text-white transition">
-          Upravit
+          {{ _('Edit') }}
         </a>
         <form method="post" action="/admin/children/{{ child.id }}/delete"
-              onsubmit="return confirm('Opravdu smazat {{ child.name }}? Tím smažeš i všechny body a historii.')">
+              onsubmit="return confirm('{{ _('Delete %(name)s? This will also delete all points and history.', name=child.name) }}')">
           <button class="rounded-xl bg-red-500/10 hover:bg-red-500/20 px-4 py-2 text-sm
                          font-bold text-red-400 transition">
-            Smazat
+            {{ _('Delete') }}
           </button>
         </form>
       </div>
@@ -60,27 +62,27 @@
           <div class="text-5xl font-black text-yellow-400 leading-none tabular-nums">
             {{ child.points }}
           </div>
-          <div class="text-slate-400 font-bold mt-1">bodů zbývá</div>
+          <div class="text-slate-400 font-bold mt-1">{{ _('points remaining') }}</div>
           <div class="text-slate-600 text-xs mt-0.5">
-            ≈ {{ (child.points // child.video_cost) if child.video_cost > 0 else '∞' }} videí
+            ≈ {{ (child.points // child.video_cost) if child.video_cost > 0 else '∞' }} {{ _('videos') }}
           </div>
         </div>
       </div>
 
       <div class="rounded-3xl border border-slate-800 bg-slate-900/50 p-6">
-        <h3 class="font-black text-white mb-4">Přidat body ručně</h3>
+        <h3 class="font-black text-white mb-4">{{ _('Add points manually') }}</h3>
         <form method="post" action="/admin/children/{{ child.id }}/award"
               class="flex gap-2 flex-wrap">
-          <input type="number" name="points" min="1" max="9999" placeholder="Body" required
+          <input type="number" name="points" min="1" max="9999" placeholder="{{ _('Points') }}" required
                  class="w-24 rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-white
                         text-sm focus:outline-none focus:border-indigo-500 transition" />
-          <input type="text" name="reason" placeholder="Důvod (nepovinné)"
+          <input type="text" name="reason" placeholder="{{ _('Reason (optional)') }}"
                  class="flex-1 min-w-[120px] rounded-xl bg-slate-800 border border-slate-700
                         px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500 transition" />
           <button type="submit"
                   class="rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-sm
                          font-bold text-white transition active:scale-95">
-            + Přidat
+            + {{ _('Add') }}
           </button>
         </form>
       </div>
@@ -89,7 +91,7 @@
     <!-- Quick award from tasks -->
     {% if tasks %}
     <div>
-      <h3 class="font-black text-white mb-3">⚡ Rychlé odměny za úkoly</h3>
+      <h3 class="font-black text-white mb-3">⚡ {{ _('Quick task rewards') }}</h3>
       <div class="flex flex-wrap gap-3">
         {% for task in tasks %}
         <form method="post" action="/admin/children/{{ child.id }}/award">
@@ -107,20 +109,20 @@
     </div>
     {% else %}
     <div class="rounded-2xl border border-dashed border-slate-800 py-5 px-6 text-sm text-slate-500">
-      Žádné úkoly —
-      <a href="/admin/tasks/new" class="text-indigo-400 hover:text-indigo-300">přidej úkoly</a>
-      pro rychlé odměňování.
+      {{ _('No tasks —') }}
+      <a href="/admin/tasks/new" class="text-indigo-400 hover:text-indigo-300">{{ _('add tasks') }}</a>
+      {{ _('for quick rewards.') }}
     </div>
     {% endif %}
 
     <!-- Devices -->
     <div class="space-y-3">
       <div class="flex justify-between items-center">
-        <h3 class="font-black text-white">Zařízení</h3>
+        <h3 class="font-black text-white">{{ _('Devices') }}</h3>
         <a href="/admin/children/{{ child.id }}/devices/new"
            class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
                   text-slate-300 hover:text-white transition">
-          + Přidat zařízení
+          + {{ _('Add device') }}
         </a>
       </div>
 
@@ -144,19 +146,25 @@
                              {% else %}
                                bg-slate-700 text-slate-400 hover:bg-slate-600
                              {% endif %}">
-                {{ '✓ Povoleno' if dev.allowed else '✗ Blokováno' }}
+                {% if dev.allowed %}✓ {{ _('Allowed') }}{% else %}✗ {{ _('Blocked') }}{% endif %}
               </button>
             </form>
+            <a href="/admin/devices/{{ dev.id }}/nixos-config"
+               title="{{ _('Download NixOS config') }}"
+               class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
+                      font-bold text-slate-300 transition">
+              ↓ NixOS
+            </a>
             <a href="/admin/devices/{{ dev.id }}/edit"
                class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
                       font-bold text-slate-300 transition">
-              Upravit
+              {{ _('Edit') }}
             </a>
             <form method="post" action="/admin/devices/{{ dev.id }}/delete"
-                  onsubmit="return confirm('Smazat zařízení „{{ dev.name }}"?')">
+                  onsubmit="return confirm('{{ _('Delete device?') }}')">
               <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
                              font-bold text-red-400 transition">
-                Smazat
+                {{ _('Delete') }}
               </button>
             </form>
           </div>
@@ -166,10 +174,10 @@
       {% else %}
       <div class="rounded-2xl border border-dashed border-slate-800 py-5 px-6
                   text-sm text-slate-500 text-center">
-        Žádné zařízení —
+        {{ _('No devices —') }}
         <a href="/admin/children/{{ child.id }}/devices/new"
-           class="text-indigo-400 hover:text-indigo-300">přidej zařízení</a>
-        pro device policy API.
+           class="text-indigo-400 hover:text-indigo-300">{{ _('add a device') }}</a>
+        {{ _('for device policy API.') }}
       </div>
       {% endif %}
     </div>
@@ -177,11 +185,11 @@
     <!-- Weekly Chores -->
     <div class="space-y-3">
       <div class="flex justify-between items-center">
-        <h3 class="font-black text-white">📋 Týdenní úkoly</h3>
+        <h3 class="font-black text-white">📋 {{ _('Weekly tasks') }}</h3>
         <a href="/admin/children/{{ child.id }}/chores/new"
            class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
                   text-slate-300 hover:text-white transition">
-          + Přidat úkol
+          + {{ _('Add task') }}
         </a>
       </div>
 
@@ -200,13 +208,13 @@
             <a href="/admin/chores/{{ chore.id }}/edit"
                class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs
                       font-bold text-slate-300 transition">
-              Upravit
+              {{ _('Edit') }}
             </a>
             <form method="post" action="/admin/chores/{{ chore.id }}/delete"
-                  onsubmit="return confirm('Smazat úkol?')">
+                  onsubmit="return confirm('{{ _('Delete task?') }}')">
               <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
                              font-bold text-red-400 transition">
-                Smazat
+                {{ _('Delete') }}
               </button>
             </form>
           </div>
@@ -216,10 +224,10 @@
       {% else %}
       <div class="rounded-2xl border border-dashed border-slate-800 py-5 px-6
                   text-sm text-slate-500 text-center">
-        Žádné úkoly —
+        {{ _('No chores —') }}
         <a href="/admin/children/{{ child.id }}/chores/new"
-           class="text-indigo-400 hover:text-indigo-300">přidej první týdenní úkol</a>
-        a dítě si ho splní z kiosku.
+           class="text-indigo-400 hover:text-indigo-300">{{ _('add first weekly chore') }}</a>
+        {{ _('and the child can complete it from the kiosk.') }}
       </div>
       {% endif %}
     </div>
@@ -227,11 +235,11 @@
     <!-- Time schedules -->
     <div class="space-y-3">
       <div class="flex justify-between items-center">
-        <h3 class="font-black text-white">🔒 Časové zámky</h3>
+        <h3 class="font-black text-white">🔒 {{ _('Time locks') }}</h3>
         <a href="/admin/children/{{ child.id }}/schedules/new"
            class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold
                   text-slate-300 hover:text-white transition">
-          + Přidat zámek
+          + {{ _('Add lock') }}
         </a>
       </div>
 
@@ -244,15 +252,15 @@
               {{ s.locked_from.strftime('%H:%M') }} → {{ s.locked_to.strftime('%H:%M') }}
             </div>
             <div class="text-xs text-slate-500">
-              {{ weekdays_short[s.weekday] if s.weekday is not none else 'Každý den' }}
+              {{ weekdays_short[s.weekday] if s.weekday is not none else _('Every day') }}
               · {{ s.message }}
             </div>
           </div>
           <form method="post" action="/admin/schedules/{{ s.id }}/delete"
-                onsubmit="return confirm('Smazat časový zámek?')">
+                onsubmit="return confirm('{{ _('Delete time lock?') }}')">
             <button class="rounded-lg bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 text-xs
                            font-bold text-red-400 transition">
-              Smazat
+              {{ _('Delete') }}
             </button>
           </form>
         </div>
@@ -261,14 +269,79 @@
       {% else %}
       <div class="rounded-2xl border border-dashed border-slate-800 py-5 px-6
                   text-sm text-slate-500 text-center">
-        Žádné časové zámky — kiosek je kdykoli dostupný.
+        {{ _('No time locks — kiosk is always accessible.') }}
       </div>
       {% endif %}
     </div>
 
+    <!-- Goal -->
+    <div class="space-y-3">
+      <h3 class="font-black text-white">🎯 {{ _('Active goal') }}</h3>
+      {% set goal = child.id | string %}
+      {% set active_goal = namespace(obj=none) %}
+      {% for g in child_goals %}{% if g.active %}{% set active_goal.obj = g %}{% endif %}{% endfor %}
+
+      {% if active_goal.obj %}
+      {% set g = active_goal.obj %}
+      {% set pct = [(child.points / g.target_points * 100) | int, 100] | min %}
+      <div class="rounded-2xl border border-indigo-800/50 bg-indigo-950/30 p-4 flex items-center gap-4">
+        <span class="text-3xl">{{ g.icon }}</span>
+        <div class="flex-1 min-w-0">
+          <div class="font-black text-white">{{ g.name }}</div>
+          <div class="text-xs text-slate-400 mt-0.5">{{ child.points }}/{{ g.target_points }} ⭐ — {{ pct }}%</div>
+          <div class="mt-2 h-2 rounded-full bg-slate-800 overflow-hidden">
+            <div class="h-full rounded-full bg-gradient-to-r from-yellow-400 to-orange-400"
+                 style="width: {{ pct }}%"></div>
+          </div>
+        </div>
+        <form method="post" action="/admin/children/{{ child.id }}/goal/clear">
+          <button type="submit"
+                  class="rounded-xl border border-slate-700 px-3 py-1.5 text-xs font-bold
+                         text-slate-400 hover:text-white transition">
+            {{ _('Cancel') }}
+          </button>
+        </form>
+      </div>
+      {% endif %}
+
+      <form method="post" action="/admin/children/{{ child.id }}/goal"
+            class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 space-y-3">
+        <p class="text-xs font-bold text-slate-500">{% if active_goal.obj %}{{ _('Change goal') }}{% else %}{{ _('Set new goal') }}{% endif %}</p>
+        <div class="flex gap-2 flex-wrap">
+          <select name="icon"
+                  class="rounded-xl bg-slate-800 border border-slate-700 px-2 py-2 text-base
+                         focus:outline-none focus:border-indigo-500 transition shrink-0">
+            <option>🎯</option><option>🎮</option><option>🧸</option><option>🍦</option>
+            <option>🚀</option><option>⚽</option><option>🎨</option><option>📱</option>
+          </select>
+          <input type="text" name="name" placeholder="{{ _('Goal name') }}" required
+                 class="flex-1 min-w-[140px] rounded-xl bg-slate-800 border border-slate-700
+                        px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition" />
+          <input type="number" name="target_points" placeholder="{{ _('Points') }}" min="1" required
+                 class="w-24 rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm
+                        text-white focus:outline-none focus:border-indigo-500 transition" />
+          <button type="submit"
+                  class="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm
+                         font-bold text-white transition active:scale-95">
+            {{ _('Save') }}
+          </button>
+        </div>
+        {% if rewards %}
+        <select name="reward_id"
+                class="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-sm
+                       text-slate-300 focus:outline-none focus:border-indigo-500 transition">
+          <option value="">— {{ _('Or choose from shop') }} —</option>
+          {% for r in rewards %}
+          <option value="{{ r.id }}">{{ r.icon }} {{ r.name }} ({{ r.cost_points }} ⭐)</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+      </form>
+    </div>
+
     <!-- Transaction history -->
     <div class="space-y-3">
-      <h3 class="font-black text-white">Historie bodů <span class="text-slate-600 font-normal text-sm">(posledních 20)</span></h3>
+      <h3 class="font-black text-white">{{ _('Points history') }} <span class="text-slate-600 font-normal text-sm">({{ _('last 20') }})</span></h3>
       {% if txs %}
       <div class="rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
         {% for tx in txs %}
@@ -290,7 +363,7 @@
       {% else %}
       <div class="rounded-2xl border border-dashed border-slate-800 py-5 text-center
                   text-slate-500 text-sm">
-        Žádné transakce
+        {{ _('No transactions') }}
       </div>
       {% endif %}
     </div>

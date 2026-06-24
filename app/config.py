@@ -10,3 +10,5 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     HOME_ROOT = os.getenv("NEXUSYS_HOME_ROOT", "/app/storage")
     KIOSK_ADMIN_PASSWORD = os.getenv("KIOSK_ADMIN_PASSWORD", "rodic123")
+    YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
+    PUBLIC_URL = os.getenv("NEXUSYS_PUBLIC_URL", "")
